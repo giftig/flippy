@@ -1,0 +1,11 @@
+# Vim files
+*.swp
+*.swo
+
+# Compiled stuff
+*.class
+*.pyc
+
+# Target
+/target
+/build
