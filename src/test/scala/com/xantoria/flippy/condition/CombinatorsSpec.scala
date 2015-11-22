@@ -6,14 +6,14 @@ import com.xantoria.flippy.BaseSpec
 class CombinatorsSpec extends BaseSpec {
   "Condition.And" should "work" in {
     val (s1, s2) = ("Cloud", "Tifa")
-    val cond1 = new Condition.Equals(s1)
-    val cond2 = new Condition.Equals(s2)
+    val cond1 = Condition.Equals(s1)
+    val cond2 = Condition.Equals(s2)
     assume(s1 != s2)
     assume(cond1.appliesTo(s1))
     assume(cond2.appliesTo(s2))
 
     // Two ways of creating an And condition
-    val andCond1 = new Condition.And(List(cond1, cond2))
+    val andCond1 = Condition.And(List(cond1, cond2))
     val andCond2 = cond1 && cond2
 
     List(andCond1, andCond2) foreach {
@@ -33,20 +33,20 @@ class CombinatorsSpec extends BaseSpec {
     doubleCond2.appliesTo(s2) should be (true)
   }
 
-  "Condition.Or and Condition.OneOf" should "work" in {
+  "Condition.Or" should "work" in {
     val (s1, s2, s3) = ("Yuffie", "Red XIII", "Cid")
-    val cond1 = new Condition.Equals(s1)
-    val cond2 = new Condition.Equals(s2)
-    val cond3 = new Condition.Equals(s3)
+    val cond1 = Condition.Equals(s1)
+    val cond2 = Condition.Equals(s2)
+    val cond3 = Condition.Equals(s3)
     assume(s1 != s2 && s1 != s3 && s2 != s3)
     assume(cond1.appliesTo(s1))
     assume(cond2.appliesTo(s2))
     assume(cond3.appliesTo(s3))
 
     // Three ways of doing the same thing
-    val orCond1 = new Condition.Or(List(cond1, cond2))
+    val orCond1 = Condition.Or(List(cond1, cond2))
     val orCond2 = cond1 || cond2
-    val orCond3 = new Condition.OneOf(List(s1, s2))
+    val orCond3 = Condition.Or.oneOf(List(s1, s2))
 
     List(orCond1, orCond2, orCond3) foreach {
       c: Condition[String] => {
@@ -59,16 +59,16 @@ class CombinatorsSpec extends BaseSpec {
 
   "Condition.Not" should "work" in {
     val (s1, s2) = ("Aerith", "Barret")
-    val cond1 = new Condition.Equals(s1)
-    val cond2 = new Condition.Equals(s2)
+    val cond1 = Condition.Equals(s1)
+    val cond2 = Condition.Equals(s2)
 
     assume(s1 != s2)
     assume(cond1.appliesTo(s1))
     assume(cond2.appliesTo(s2))
 
-    val not1a = new Condition.Not(cond1)
+    val not1a = Condition.Not(cond1)
     val not1b = !cond1
-    val not2a = new Condition.Not(cond2)
+    val not2a = Condition.Not(cond2)
     val not2b = !cond2
 
     List(not1a, not1b) foreach {
@@ -93,7 +93,7 @@ class CombinatorsSpec extends BaseSpec {
       "Barret" -> "Catastrophe"
     )
 
-    val conds = data map { case (k, v) => (k, new Condition.Equals(v)) }
+    val conds = data map { case (k, v) => (k, Condition.Equals(v)) }
     conds.foreach { case (k, v) => assume(v.appliesTo(data(k))) }
 
     val namespacedFalse = conds map {

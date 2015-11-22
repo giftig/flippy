@@ -19,7 +19,7 @@ class InMemoryBackendSpec extends BaseSpec {
   "The in-memory backend" should "allow setting and retrieving switch conditions" in {
     val backend = new InMemoryBackend()
     val switchName = "wear_dress"
-    val cond = new Condition.Equals("Ms. Cloud") on "username"
+    val cond = Condition.Equals("Ms. Cloud") on "username"
 
     backend.configureSwitch(switchName, cond)
     fin(backend.switchConfig(switchName)) should be (cond)
@@ -30,7 +30,7 @@ class InMemoryBackendSpec extends BaseSpec {
     val switchName = "is_terrorist"
     val avalanche = List("Cloud", "Tifa", "Barret")
     val innocents = List("Aeris", "Red XIII")
-    val cond = new Condition.OneOf(avalanche) on "username"
+    val cond = Condition.Or.oneOf(avalanche) on "username"
 
     backend.configureSwitch(switchName, cond)
     avalanche foreach {

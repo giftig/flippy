@@ -3,31 +3,31 @@ package com.xantoria.flippy.condition
 abstract class Condition[T] {
   def appliesTo(value: T): Boolean
 
-  def &&(c: Condition[T]): Condition[T] = new Condition.And[T](List(this, c))
-  def ||(c: Condition[T]): Condition[T] = new Condition.Or[T](List(this, c))
+  def &&(c: Condition[T]): Condition[T] = Condition.And[T](List(this, c))
+  def ||(c: Condition[T]): Condition[T] = Condition.Or[T](List(this, c))
   def on(attr: String, fallback: Boolean = false) = new NamespacedCondition(attr, this, fallback)
-  def unary_! = new Condition.Not[T](this)
+  def unary_! = Condition.Not[T](this)
 }
 
 object Condition {
-  class And[T](subs: List[Condition[T]]) extends Condition[T] {
+  case class And[T](subs: List[Condition[T]]) extends Condition[T] {
     def appliesTo(value: T): Boolean = subs forall { _.appliesTo(value) }
   }
 
-  class Or[T](subs: List[Condition[T]]) extends Condition[T] {
+  case class Or[T](subs: List[Condition[T]]) extends Condition[T] {
     def appliesTo(value: T): Boolean = subs exists { _.appliesTo(value) }
   }
 
-  class Equals[T](requiredValue: T) extends Condition[T] {
+  case class Equals[T](requiredValue: T) extends Condition[T] {
     def appliesTo(value: T): Boolean = value == requiredValue
   }
 
-  class OneOf[T](requiredIn: List[T]) extends Condition.Or[T](
-    requiredIn map { new Condition.Equals(_) }
-  )
-
-  class Not[T](inverted: Condition[T]) extends Condition[T] {
+  case class Not[T](inverted: Condition[T]) extends Condition[T] {
     def appliesTo(value: T) = !inverted.appliesTo(value)
+  }
+
+  object Or {
+    def oneOf[T](requiredIn: List[T]): Or[T] = Or(requiredIn map { Condition.Equals(_) })
   }
 }
 
