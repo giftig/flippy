@@ -17,7 +17,7 @@ class CombinatorsSpec extends BaseSpec {
     val andCond2 = cond1 && cond2
 
     List(andCond1, andCond2) foreach {
-      c: Condition[String] => {
+      c: Condition => {
         c.appliesTo(s1) should be (false)
         c.appliesTo(s2) should be (false)
       }
@@ -49,7 +49,7 @@ class CombinatorsSpec extends BaseSpec {
     val orCond3 = Condition.Or.oneOf(List(s1, s2))
 
     List(orCond1, orCond2, orCond3) foreach {
-      c: Condition[String] => {
+      c: Condition => {
         c.appliesTo(s1) should be (true)
         c.appliesTo(s2) should be (true)
         c.appliesTo(s3) should be (false)
@@ -72,14 +72,14 @@ class CombinatorsSpec extends BaseSpec {
     val not2b = !cond2
 
     List(not1a, not1b) foreach {
-      c: Condition[String] => {
+      c: Condition => {
         c.appliesTo(s1) should be (false)
         c.appliesTo(s2) should be (true)
       }
     }
 
     List(not2a, not2b) foreach {
-      c: Condition[String] => {
+      c: Condition => {
         c.appliesTo(s1) should be (true)
         c.appliesTo(s2) should be (false)
       }
@@ -97,23 +97,23 @@ class CombinatorsSpec extends BaseSpec {
     conds.foreach { case (k, v) => assume(v.appliesTo(data(k))) }
 
     val namespacedFalse = conds map {
-      case (k: String, c: Condition[String]) => c on k
+      case (k: String, c: Condition) => c on k
     }
     val namespacedTrue = conds map {
-      case (k: String, c: Condition[String]) => c on (k, true)
+      case (k: String, c: Condition) => c on (k, true)
     }
 
     (namespacedFalse ++ namespacedTrue) foreach {
-      c: Condition[Map[String, Any]] => {
+      c: Condition => {
         c.appliesTo(data) should be (true)
       }
     }
 
     namespacedFalse foreach {
-      c: Condition[Map[String, Any]] => c.appliesTo(Map()) should be (false)
+      c: Condition => c.appliesTo(Map()) should be (false)
     }
     namespacedTrue foreach {
-      c: Condition[Map[String, Any]] => c.appliesTo(Map()) should be (true)
+      c: Condition => c.appliesTo(Map()) should be (true)
     }
   }
 }

@@ -11,8 +11,8 @@ abstract class Backend(implicit ec: ExecutionContext) {
   def createSwitch(name: String): Future[Unit]
   def deleteSwitch(name: String): Future[Unit]
 
-  def configureSwitch(name: String, condition: Condition[Map[String, Any]]): Future[Unit]
-  def switchConfig(name: String): Future[Condition[Map[String, Any]]]
+  def configureSwitch(name: String, condition: Condition): Future[Unit]
+  def switchConfig(name: String): Future[Condition]
 
   /**
    * Looks up the switch criteria and checks if it applies, reporting any problems
@@ -22,7 +22,7 @@ abstract class Backend(implicit ec: ExecutionContext) {
    */
   def isActiveSafe(switchName: String, data: Map[String, Any]): Future[Boolean] = {
     switchConfig(switchName) map {
-      case c: Condition[Map[String, Any]] => c.appliesTo(data)
+      case c: Condition => c.appliesTo(data)
     }
   }
 

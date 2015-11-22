@@ -7,7 +7,7 @@ import scala.collection.mutable.{Map => MMap}
 import com.xantoria.flippy.condition.Condition
 
 class InMemoryBackend(implicit ec: ExecutionContext) extends Backend {
-  private val switches = MMap[String, Condition[Map[String, Any]]]()
+  private val switches = MMap[String, Condition]()
 
   def createSwitch(name: String): Future[Unit] = Future(())
   def deleteSwitch(name: String): Future[Unit] = Future {
@@ -15,11 +15,11 @@ class InMemoryBackend(implicit ec: ExecutionContext) extends Backend {
     ()
   }
 
-  def configureSwitch(name: String, condition: Condition[Map[String, Any]]): Future[Unit] = {
+  def configureSwitch(name: String, condition: Condition): Future[Unit] = {
     Future {
       switches.put(name, condition)
       ()
     }
   }
-  def switchConfig(name: String): Future[Condition[Map[String, Any]]] = Future(switches(name))
+  def switchConfig(name: String): Future[Condition] = Future(switches(name))
 }
