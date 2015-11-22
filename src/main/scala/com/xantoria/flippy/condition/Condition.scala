@@ -36,7 +36,7 @@ class NamespacedCondition(
 ) extends Condition {
   override def appliesTo(value: Any) = value match {
     case m: Map[_, _] =>
-      m.asInstanceOf[Map[String, String]].get(attr) map { cond.appliesTo(_) } getOrElse fallback
+      m.asInstanceOf[Map[String, Any]].get(attr) map { cond.appliesTo(_) } getOrElse fallback
     case _ => fallback
   }
 }

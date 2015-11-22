@@ -79,6 +79,12 @@
       <version>${project.build.scalaVersion}</version>
     </dependency>
 
+    <dependency>
+      <groupId>net.liftweb</groupId>
+      <artifactId>lift-json_2.10</artifactId>
+      <version>2.6</version>
+    </dependency>
+
     <!-- TEST DEPENDENCIES -->
     <dependency>
       <groupId>org.scalatest</groupId>
