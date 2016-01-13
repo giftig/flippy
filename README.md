@@ -11,9 +11,9 @@ a set of data.
     // Only users whose names are between these fine gentlemen shall have the switch on
     val condition = StringConditions.Range("Albert", "George") on "name"
 
-    backend.configureSwitch("is\_gentleman", condition)
-    backend.isActive("is\_gentleman", Map("name" -> "Charlie Charlington"))  // on
-    backend.isActive("is\_gentleman", Map("name" -> "Kevin Louterson")  // off
+    backend.configureSwitch("is_gentleman", condition)
+    backend.isActive("is_gentleman", Map("name" -> "Charlie Charlington"))  // on
+    backend.isActive("is_gentleman", Map("name" -> "Kevin Louterson")  // off
 
 You can also define your own switch condition by extending `Condition[T]`:
 
