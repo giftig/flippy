@@ -8,22 +8,22 @@ A number of default conditions are provided, and can be assembled to form a "mas
 which represents all the conditions which go into determining if a switch is on or off based on
 a set of data.
 
-  // Only users whose names are between these fine gentlemen shall have the switch on
-  val condition = StringConditions.Range("Albert", "George") on "name"
+    // Only users whose names are between these fine gentlemen shall have the switch on
+    val condition = StringConditions.Range("Albert", "George") on "name"
 
-  backend.configureSwitch("is\_gentleman", condition)
-  backend.isActive("is\_gentleman", Map("name" -> "Charlie Charlington"))  // on
-  backend.isActive("is\_gentleman", Map("name" -> "Kevin Louterson")  // off
+    backend.configureSwitch("is\_gentleman", condition)
+    backend.isActive("is\_gentleman", Map("name" -> "Charlie Charlington"))  // on
+    backend.isActive("is\_gentleman", Map("name" -> "Kevin Louterson")  // off
 
 You can also define your own switch condition by extending `Condition[T]`:
 
-  case object AllLuckySevens extends Condition[Int] {
-    def appliesTo(i: Int) = i == 7777
-  }
+    case object AllLuckySevens extends Condition[Int] {
+      def appliesTo(i: Int) = i == 7777
+    }
 
-  val condition = AllLuckySevens on "HP" && Condition.Equals("Cloud") on "name"
-  backend.configureSwitch("lotsofdamage", condition)
-  backend.isActive("lotsofdamage", Map("name" -> "Cloud", "HP" -> 7777))  // on
+    val condition = AllLuckySevens on "HP" && Condition.Equals("Cloud") on "name"
+    backend.configureSwitch("lotsofdamage", condition)
+    backend.isActive("lotsofdamage", Map("name" -> "Cloud", "HP" -> 7777))  // on
 
 
 ## Backends
