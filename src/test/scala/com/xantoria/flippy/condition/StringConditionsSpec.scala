@@ -39,6 +39,10 @@ class StringConditionsSpec extends BaseSpec {
     cond2.appliesTo("keychain") should be (true)
     cond1.appliesTo("monday") should be (true)
     cond2.appliesTo("monday") should be (false)
+  }
 
+  it should "be false if given a non-string value" in {
+    val cond = new Range(low = None, high = None)
+    cond.appliesTo(12) should be (false)
   }
 }
