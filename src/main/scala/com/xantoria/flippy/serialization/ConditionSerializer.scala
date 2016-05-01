@@ -53,6 +53,7 @@ object ConditionSerializer {
     def deserialize(data: JValue)(implicit formats: Formats): Condition.Equals = {
       val value: Any = (data \ "value") match {
         case v: JString => v.extract[String]
+        case v: JInt => v.extract[Int]
         case v: JDouble => v.extract[Double]
         case v: JBool => v.extract[Boolean]
         case JNull | JNothing => null

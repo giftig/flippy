@@ -163,4 +163,72 @@ class SerializerSpec extends BaseSpec {
     parsed.appliesTo(tifa) should be (false)
     parsed.appliesTo(namelessOne) should be (true)
   }
+
+  "Complex serialization conditions" should "work" in {
+    // A nice complicated condition: this should match anyone named "Cloud" or who is
+    // 17 years old, but only if they come from the Final Fantasy game franchise.
+    val data = """
+      {
+        "condition_type": "and",
+        "conditions": [
+          {
+            "condition_type": "namespaced",
+            "attr": "game_franchise",
+            "condition": {
+              "condition_type": "equals",
+              "value": "Final Fantasy"
+            }
+          },
+          {
+            "condition_type": "or",
+            "conditions": [
+              {
+                "condition_type": "namespaced",
+                "attr": "name",
+                "condition": {
+                  "condition_type": "equals",
+                  "value": "Cloud"
+                }
+              },
+              {
+                "condition_type": "namespaced",
+                "attr": "age",
+                "condition": {
+                  "condition_type": "equals",
+                  "value": 17
+                }
+              }
+            ]
+          }
+        ]
+      }
+    """
+
+    val tifa = Map(
+      "name" -> "Tifa",
+      "age" -> 20,
+      "game_franchise" -> "Final Fantasy"
+    )
+    val cloud = Map(
+      "name" -> "Cloud",
+      "age" -> 21,
+      "game_franchise" -> "Final Fantasy"
+    )
+    val yuffie = Map(
+      "name" -> "Yuffie",
+      "age" -> 17,
+      "game_franchise" -> "Final Fantasy"
+    )
+    val kid = Map(
+      "name" -> "Kid",
+      "age" -> 17, // She's actually 16 in the game but never mind
+      "game_franchise" -> "Chrono series"
+    )
+
+    val parsed = parse(data).extract[Condition]
+    parsed.appliesTo(tifa) should be (false)  // Correct franchise, wrong name, wrong age
+    parsed.appliesTo(cloud) should be (true)  // Correct franchise, correct name, wrong age
+    parsed.appliesTo(yuffie) should be (true) // Correct franchise, wrong name, correct age
+    parsed.appliesTo(kid) should be (false)   // Wrong franchise, wrong name, correct age
+  }
 }
