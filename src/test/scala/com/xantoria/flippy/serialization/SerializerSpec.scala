@@ -34,6 +34,14 @@ class SerializerSpec extends BaseSpec {
     extracted.appliesTo("Ms. Barrett") should be (false)
   }
 
+  it should "serialize correctly" in {
+    val c = Condition.Equals("Emerald Weapon")
+    val expected = """{"condition_type":"equals","value":"Emerald Weapon"}"""
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
+  }
+
   "And serializer" should "deserialize correctly" in {
     val data = """
       {
@@ -55,6 +63,7 @@ class SerializerSpec extends BaseSpec {
     extracted.appliesTo("Tifa") should be (false)
     extracted.appliesTo("Yuffie") should be (false)
   }
+
   it should "fail if malformed" in {
     val noConditions = """{"condition_type": "and"}"""
     val weirdConditionsType = """{"condition_type": "and", "conditions": 123}"""
@@ -65,6 +74,20 @@ class SerializerSpec extends BaseSpec {
     a [MappingException] should be thrownBy parse(
       weirdConditionsType
     ).extract[Condition]
+  }
+
+  it should "serialize correctly" in {
+    val c = Condition.And(List(
+      Condition.Equals("Emerald Weapon"), Condition.Equals("Ruby Weapon")
+    ))
+    val expected = {
+      """{"condition_type":"and","conditions":[""" +
+      """{"condition_type":"equals","value":"Emerald Weapon"},""" +
+      """{"condition_type":"equals","value":"Ruby Weapon"}]}"""
+    }
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
   }
 
   "Or serializer" should "deserialize correctly" in {
@@ -102,6 +125,18 @@ class SerializerSpec extends BaseSpec {
     ).extract[Condition]
   }
 
+  it should "serialize correctly" in {
+    val c = Condition.Or(List(Condition.Equals("Emerald Weapon"), Condition.Equals("Ruby Weapon")))
+    val expected = {
+      """{"condition_type":"or","conditions":[""" +
+      """{"condition_type":"equals","value":"Emerald Weapon"},""" +
+      """{"condition_type":"equals","value":"Ruby Weapon"}]}"""
+    }
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
+  }
+
   "Not serializer" should "deserialize correctly" in {
     val data = """
       {
@@ -116,6 +151,17 @@ class SerializerSpec extends BaseSpec {
     parsed shouldBe a [Condition.Not]
     parsed.appliesTo("Ms. Cloud") should be (false)
     parsed.appliesTo("Yuffie") should be (true)
+  }
+
+  it should "serialize correctly" in {
+    val c = Condition.Not(Condition.Equals("Midgar"))
+    val expected = {
+      """{"condition_type":"not","condition":""" +
+      """{"condition_type":"equals","value":"Midgar"}}"""
+    }
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
   }
 
   "Namespaced serializer" should "deserialize correctly" in {
@@ -162,6 +208,18 @@ class SerializerSpec extends BaseSpec {
     parsed.appliesTo(cloud) should be (true)
     parsed.appliesTo(tifa) should be (false)
     parsed.appliesTo(namelessOne) should be (true)
+  }
+
+  it should "serialize correctly" in {
+    val c = Condition.Equals("Cloud") on "name"
+    val expected = {
+      """{"condition_type":"namespaced","attr":"name","condition":""" +
+      """{"condition_type":"equals","value":"Cloud"},""" +
+      """"fallback":false}"""
+    }
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
   }
 
   "Complex serialization conditions" should "work" in {

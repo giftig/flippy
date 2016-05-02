@@ -2,7 +2,7 @@ package com.xantoria.flippy.serialization
 
 import scala.reflect._
 
-import net.liftweb.json.{Formats, Serializer, ShortTypeHints, TypeInfo}
+import net.liftweb.json.{Extraction, Formats, Serializer, ShortTypeHints, TypeInfo}
 import net.liftweb.json.JsonAST._
 
 import com.xantoria.flippy.condition.Condition
@@ -53,6 +53,7 @@ object SerializationEngine {
 
 abstract class ConditionSerializer[T <: Condition] {
   val typeName: String
+  def typeField = JField("condition_type", JString(typeName))
 
   def canSerialize(condition: Condition): Boolean
 
@@ -78,7 +79,18 @@ object ConditionSerializer {
       new Condition.Equals(value)
     }
 
-    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
+    override def serialize(c: Condition)(implicit formats: Formats): JValue = {
+      val cond = c.asInstanceOf[Condition.Equals]
+      val serializedValue: JValue = cond.requiredValue match {
+        case v: String => JString(v)
+        case v: Int => JInt(v)
+        case v: Double => JDouble(v)
+        case v: Boolean => JBool(v)
+        case None | null => JNull
+        case v => JString(v.toString)
+      }
+      JObject(List(typeField, JField("value", serializedValue)))
+    }
   }
 
   object Not extends ConditionSerializer[Condition.Not] {
@@ -90,7 +102,13 @@ object ConditionSerializer {
       (data \ "condition").extract[Condition]
     )
 
-    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
+    def serialize(c: Condition)(implicit formats: Formats): JValue = {
+      val cond = c.asInstanceOf[Condition.Not]
+      JObject(List(
+        typeField,
+        JField("condition", Extraction.decompose(cond.inverted))
+      ))
+    }
   }
 
   object And extends ConditionSerializer[Condition.And] {
@@ -110,7 +128,13 @@ object ConditionSerializer {
       Condition.And(conditions)
     }
 
-    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
+    def serialize(c: Condition)(implicit formats: Formats): JValue = {
+      val cond = c.asInstanceOf[Condition.And]
+      JObject(List(
+        typeField,
+        JField("conditions", JArray(cond.subs map { Extraction.decompose(_) }))
+      ))
+    }
   }
 
   object Or extends ConditionSerializer[Condition.Or] {
@@ -130,7 +154,13 @@ object ConditionSerializer {
       Condition.Or(conditions)
     }
 
-    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
+    def serialize(c: Condition)(implicit formats: Formats): JValue = {
+      val cond = c.asInstanceOf[Condition.Or]
+      JObject(List(
+        typeField,
+        JField("conditions", JArray(cond.subs map { Extraction.decompose(_) }))
+      ))
+    }
   }
 }
 
@@ -148,5 +178,13 @@ object NamespacedConditionSerializer extends ConditionSerializer[NamespacedCondi
     new NamespacedCondition(attr, condition, fallback)
   }
 
-  def serialize(c: Condition)(implicit formats: Formats): JValue = ???
+  def serialize(c: Condition)(implicit formats: Formats): JValue = {
+    val cond = c.asInstanceOf[NamespacedCondition]
+    JObject(List(
+      typeField,
+      JField("attr", JString(cond.attr)),
+      JField("condition", Extraction.decompose(cond.cond)),
+      JField("fallback", JBool(cond.fallback))
+    ))
+  }
 }

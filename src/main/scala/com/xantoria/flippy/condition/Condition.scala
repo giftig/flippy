@@ -10,7 +10,7 @@ abstract class Condition {
 }
 
 object Condition {
-  case class And(subs: List[Condition]) extends Condition {
+  case class And(val subs: List[Condition]) extends Condition {
     override def appliesTo(value: Any): Boolean = subs forall { _.appliesTo(value) }
   }
 
@@ -32,7 +32,7 @@ object Condition {
 }
 
 class NamespacedCondition(
-  attr: String, cond: Condition, fallback: Boolean
+  val attr: String, val cond: Condition, val fallback: Boolean
 ) extends Condition {
   override def appliesTo(value: Any) = value match {
     case m: Map[_, _] =>
