@@ -6,13 +6,13 @@ object StringConditions {
     override def appliesTo(a: Any) = false
   }
 
-  class Range(low: Option[String], high: Option[String]) extends SCondition {
+  class Range(val low: Option[String], val high: Option[String]) extends SCondition {
     override def appliesTo(s: String): Boolean = {
       (low map { s > _ } getOrElse true) && (high map { s < _ } getOrElse true)
     }
   }
 
-  class Substring(ss: String) extends SCondition {
-    override def appliesTo(s: String): Boolean = s.contains(ss)
+  class Substring(val sub: String) extends SCondition {
+    override def appliesTo(s: String): Boolean = s.contains(sub)
   }
 }
