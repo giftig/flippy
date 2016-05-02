@@ -12,14 +12,16 @@ class MalformedConditionDefinitionException(msg: String) extends RuntimeExceptio
 class UnsupportedConditionTypeException(condType: String) extends RuntimeException(condType)
 
 class SerializationEngine(
-  val conditionTypes: Map[String, ConditionSerializer[_]]
+  val conditionTypes: List[ConditionSerializer[_]]
 ) extends Serializer[Condition] {
   private val Class = classOf[Condition]
 
   def deserialize(implicit formats: Formats): PartialFunction[(TypeInfo, JValue), Condition] = {
     case (TypeInfo(Class, _), data) => {
       val desiredType = (data \ "condition_type").extractOpt[String]
-      val concrete = desiredType.map { conditionTypes.get(_) }.flatten getOrElse {
+      val concrete = desiredType.map {
+        desired: String => conditionTypes.find { _.typeName == desired }
+      }.flatten getOrElse {
         throw new UnsupportedConditionTypeException(desiredType.getOrElse("none specified"))
       }
 
@@ -28,28 +30,42 @@ class SerializationEngine(
   }
 
   def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-    case c: Condition => JString("FIXME")
+    case c: Condition => {
+      val serializer = conditionTypes.find { _.canSerialize(c) }.getOrElse {
+        throw new UnsupportedConditionTypeException(c.getClass.getName)
+      }
+      serializer.serialize(c)
+    }
   }
 }
 
 object SerializationEngine {
-  final val DEFAULTS: Map[String, ConditionSerializer[_]] = Map(
-    "and" -> ConditionSerializer.And,
-    "equals" -> ConditionSerializer.Equals,
-    "namespaced" -> NamespacedConditionSerializer,
-    "not" -> ConditionSerializer.Not,
-    "or" -> ConditionSerializer.Or
+  final val DEFAULTS: List[ConditionSerializer[_]] = List(
+    ConditionSerializer.And,
+    ConditionSerializer.Equals,
+    ConditionSerializer.Not,
+    ConditionSerializer.Or,
+    NamespacedConditionSerializer
   )
 
   def apply(): SerializationEngine = new SerializationEngine(DEFAULTS)
 }
 
 abstract class ConditionSerializer[T <: Condition] {
+  val typeName: String
+
+  def canSerialize(condition: Condition): Boolean
+
+  def serialize(condition: Condition)(implicit formats: Formats): JValue
   def deserialize(data: JValue)(implicit formats: Formats): T
 }
 
 object ConditionSerializer {
   object Equals extends ConditionSerializer[Condition.Equals] {
+    override val typeName: String = "equals"
+
+    def canSerialize(c: Condition) = c.isInstanceOf[Condition.Equals]
+
     def deserialize(data: JValue)(implicit formats: Formats): Condition.Equals = {
       val value: Any = (data \ "value") match {
         case v: JString => v.extract[String]
@@ -61,15 +77,27 @@ object ConditionSerializer {
       }
       new Condition.Equals(value)
     }
+
+    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
   }
 
   object Not extends ConditionSerializer[Condition.Not] {
+    override val typeName: String = "not"
+
+    def canSerialize(c: Condition) = c.isInstanceOf[Condition.Not]
+
     def deserialize(data: JValue)(implicit formats: Formats): Condition.Not = Condition.Not(
       (data \ "condition").extract[Condition]
     )
+
+    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
   }
 
   object And extends ConditionSerializer[Condition.And] {
+    override val typeName: String = "and"
+
+    def canSerialize(c: Condition) = c.isInstanceOf[Condition.And]
+
     def deserialize(data: JValue)(implicit formats: Formats): Condition.And = {
       val conditions = (data \ "conditions").extractOpt[List[JValue]] map {
         _.map { _.extract[Condition] }
@@ -81,9 +109,15 @@ object ConditionSerializer {
       }
       Condition.And(conditions)
     }
+
+    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
   }
 
   object Or extends ConditionSerializer[Condition.Or] {
+    override val typeName: String = "or"
+
+    def canSerialize(c: Condition) = c.isInstanceOf[Condition.Or]
+
     def deserialize(data: JValue)(implicit formats: Formats): Condition.Or = {
       val conditions = (data \ "conditions").extractOpt[List[JValue]] map {
         _.map { _.extract[Condition] }
@@ -95,10 +129,16 @@ object ConditionSerializer {
       }
       Condition.Or(conditions)
     }
+
+    def serialize(c: Condition)(implicit formats: Formats): JValue = ???
   }
 }
 
 object NamespacedConditionSerializer extends ConditionSerializer[NamespacedCondition] {
+  override val typeName: String = "namespaced"
+
+  def canSerialize(c: Condition) = c.isInstanceOf[NamespacedCondition]
+
   def deserialize(data: JValue)(implicit formats: Formats): NamespacedCondition = {
     val attr = (data \ "attr").extractOpt[String] getOrElse {
       throw new MalformedConditionDefinitionException("[Namespace] Missing attr!")
@@ -107,4 +147,6 @@ object NamespacedConditionSerializer extends ConditionSerializer[NamespacedCondi
     val fallback = (data \ "fallback").extractOpt[Boolean] getOrElse false
     new NamespacedCondition(attr, condition, fallback)
   }
+
+  def serialize(c: Condition)(implicit formats: Formats): JValue = ???
 }
