@@ -15,10 +15,10 @@ a set of data.
     backend.isActive("is_gentleman", Map("name" -> "Charlie Charlington"))  // on
     backend.isActive("is_gentleman", Map("name" -> "Kevin Louterson")  // off
 
-You can also define your own switch condition by extending `Condition[T]`:
+You can also define your own switch condition by extending `Condition`:
 
-    case object AllLuckySevens extends Condition[Int] {
-      def appliesTo(i: Int) = i == 7777
+    case object AllLuckySevens extends Condition {
+      def appliesTo(a: Any) = a == 7777
     }
 
     val condition = AllLuckySevens on "HP" && Condition.Equals("Cloud") on "name"
