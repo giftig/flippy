@@ -3,7 +3,7 @@ package com.xantoria.flippy.condition
 object StringConditions {
   abstract class SCondition extends Condition {
     def appliesTo(s: String): Boolean
-    override def appliesTo(a: Any) = false
+    override def appliesTo(a: Any) = a.isInstanceOf[String] && appliesTo(a.asInstanceOf[String])
   }
 
   class Range(val low: Option[String], val high: Option[String]) extends SCondition {

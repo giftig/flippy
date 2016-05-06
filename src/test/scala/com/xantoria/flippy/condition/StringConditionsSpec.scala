@@ -45,4 +45,14 @@ class StringConditionsSpec extends BaseSpec {
     val cond = new Range(low = None, high = None)
     cond.appliesTo(12) should be (false)
   }
+
+  it should "work when called as a generic Condition" in {
+    val rangeCond: Condition = new Range(low = None, high = None)
+    rangeCond.appliesTo("alpha") should be (true)
+    rangeCond.appliesTo("zulu") should be (true)
+
+    val subCond: Condition = new Substring("a")
+    subCond.appliesTo("alpha") should be (true)
+    subCond.appliesTo("tango") should be (true)
+  }
 }

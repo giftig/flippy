@@ -45,7 +45,9 @@ object SerializationEngine {
     ConditionSerializer.Equals,
     ConditionSerializer.Not,
     ConditionSerializer.Or,
-    NamespacedConditionSerializer
+    NamespacedConditionSerializer,
+    StringConditionSerializers.Range,
+    StringConditionSerializers.Substring
   )
 
   def apply(): SerializationEngine = new SerializationEngine(DEFAULTS)

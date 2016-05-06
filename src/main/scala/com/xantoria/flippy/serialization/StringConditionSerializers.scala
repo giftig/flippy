@@ -9,6 +9,7 @@ import com.xantoria.flippy.condition.{Condition, StringConditions}
  * Serializers for `com.xantoria.flippy.condition.StringConditions classes
  */
 object StringConditionSerializers {
+  // TODO: Add an inclusivity flag
   object Range extends ConditionSerializer[StringConditions.Range] {
     override val typeName: String = "string:range"
 
@@ -30,6 +31,7 @@ object StringConditionSerializers {
     }
   }
 
+  // TODO: Add a case-sensitivity flag
   object Substring extends ConditionSerializer[StringConditions.Substring] {
     override val typeName: String = "string:substring"
 
