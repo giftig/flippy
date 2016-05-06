@@ -41,6 +41,16 @@ class StringConditionsSpec extends BaseSpec {
     cond2.appliesTo("monday") should be (false)
   }
 
+  it should "allow matching a regex" in {
+    val nocaps = new Regex("^[a-z ]+$".r)
+    val caps = new Regex("^[A-Za-z ]+$".r)
+
+    nocaps.appliesTo("regex is fun") should be (true)
+    caps.appliesTo("regex is fun") should be (true)
+    nocaps.appliesTo("ReGeX is Fun") should be (false)
+    caps.appliesTo("ReGeX is Fun") should be (true)
+  }
+
   it should "be false if given a non-string value" in {
     val cond = new Range(low = None, high = None)
     cond.appliesTo(12) should be (false)

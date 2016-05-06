@@ -47,6 +47,7 @@ object SerializationEngine {
     ConditionSerializer.Or,
     NamespacedConditionSerializer,
     StringConditionSerializers.Range,
+    StringConditionSerializers.Regex,
     StringConditionSerializers.Substring
   )
 

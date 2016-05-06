@@ -55,4 +55,27 @@ class StringSerializerSpec extends BaseSpec {
 
     actual should be (expected)
   }
+
+  "Regex serializer" should "deserialize correctly" in {
+    val data = """
+      {
+        "condition_type": "string:regex",
+        "pattern": "^(Cl|Yu)[ouf]{2}(d|ie)$"
+      }
+    """
+
+    val extracted = parse(data).extract[Condition]
+    extracted shouldBe a [StringConditions.Regex]
+    extracted.appliesTo("Cloud") should be (true)
+    extracted.appliesTo("Yuffie") should be (true)
+    extracted.appliesTo("Tifa") should be (false)
+  }
+
+  it should "serialize correctly" in {
+    val c = new StringConditions.Regex("^[a-zA-Z0-9]+$".r)
+    val expected = """{"condition_type":"string:regex","pattern":"^[a-zA-Z0-9]+$"}"""
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
+  }
 }

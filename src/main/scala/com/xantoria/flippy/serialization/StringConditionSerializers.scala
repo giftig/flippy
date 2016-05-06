@@ -31,6 +31,27 @@ object StringConditionSerializers {
     }
   }
 
+  object Regex extends ConditionSerializer[StringConditions.Regex] {
+    override val typeName: String = "string:regex"
+
+    def canSerialize(c: Condition) = c.isInstanceOf[StringConditions.Regex]
+
+    def serialize(condition: Condition)(implicit formats: Formats): JValue = {
+      val cond = condition.asInstanceOf[StringConditions.Regex]
+      JObject(List(
+        typeField,
+        JField("pattern", JString(cond.pattern.toString))
+      ))
+    }
+
+    def deserialize(data: JValue)(implicit formats: Formats): StringConditions.Regex = {
+      val pattern = (data \ "pattern").extractOpt[String] map { _.r } getOrElse {
+        throw new MalformedConditionDefinitionException("[String:Regex] No pattern!")
+      }
+      new StringConditions.Regex(pattern)
+    }
+  }
+
   // TODO: Add a case-sensitivity flag
   object Substring extends ConditionSerializer[StringConditions.Substring] {
     override val typeName: String = "string:substring"
