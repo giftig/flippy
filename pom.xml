@@ -92,5 +92,13 @@
       <version>2.2.1</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Docker integration testkit -->
+    <dependency>
+      <groupId>com.whisk</groupId>
+      <artifactId>docker-testkit-scalatest_2.10</artifactId>
+      <version>0.6.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

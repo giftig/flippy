@@ -81,6 +81,14 @@ guide, and add them to your ```SerializationEngine```'s context by instantiating
 List including your own serializers. ```SerializationEngine.DEFAULTS``` is provided to easily
 concatenate with your own and roll your own set of formats.
 
+## Running tests
+### Docker
+To run tests involving docker, you'll need to make sure docker is installed and that you've
+set the ```DOCKER_URL``` env var.
+
+    # By default on linux
+    export DOCKER_URL=unix:///var/run/docker.sock
+
 
 ## Management interface
 
