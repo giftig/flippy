@@ -85,6 +85,16 @@
       <version>2.6</version>
     </dependency>
 
+    <!-- OPTIONAL DEPENDENCIES -->
+    <!-- Backends -->
+    <dependency>
+      <groupId>net.debasishg</groupId>
+      <artifactId>redisclient_2.10</artifactId>
+      <version>3.0</version>
+      <optional>true</optional>
+    </dependency>
+
+
     <!-- TEST DEPENDENCIES -->
     <dependency>
       <groupId>org.scalatest</groupId>
