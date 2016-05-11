@@ -7,7 +7,9 @@ import com.xantoria.flippy.condition.Condition
 
 class IncorrectConditionTypeException extends RuntimeException
 
-abstract class Backend(implicit ec: ExecutionContext) {
+abstract class Backend {
+  protected implicit val ec: ExecutionContext
+
   def createSwitch(name: String): Future[Unit]
   def deleteSwitch(name: String): Future[Unit]
 

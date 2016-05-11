@@ -26,6 +26,13 @@ object Condition {
     override def appliesTo(value: Any) = !inverted.appliesTo(value)
   }
 
+  case object True extends Condition {
+    override def appliesTo(value: Any) = true
+  }
+  case object False extends Condition {
+    override def appliesTo(value: Any) = false
+  }
+
   object Or {
     def oneOf(requiredIn: List[Any]): Or = Or(requiredIn map { Condition.Equals(_) })
   }
