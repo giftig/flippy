@@ -29,7 +29,7 @@ class SerializationEngine(
     }
   }
 
-  def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+  def serialize(implicit formats: Formats): PartialFunction[Any, JValue] = {
     case c: Condition => {
       val serializer = conditionTypes.find { _.canSerialize(c) }.getOrElse {
         throw new UnsupportedConditionTypeException(c.getClass.getName)
@@ -71,27 +71,13 @@ object ConditionSerializer {
     def canSerialize(c: Condition) = c.isInstanceOf[Condition.Equals]
 
     def deserialize(data: JValue)(implicit formats: Formats): Condition.Equals = {
-      val value: Any = (data \ "value") match {
-        case v: JString => v.extract[String]
-        case v: JInt => v.extract[Int]
-        case v: JDouble => v.extract[Double]
-        case v: JBool => v.extract[Boolean]
-        case JNull | JNothing => null
-        case _ => throw new MalformedConditionDefinitionException("[Equals] Unsupported type")
-      }
+      val value: Any = (data \ "value").extract[ContextValue].underlying
       new Condition.Equals(value)
     }
 
     override def serialize(c: Condition)(implicit formats: Formats): JValue = {
       val cond = c.asInstanceOf[Condition.Equals]
-      val serializedValue: JValue = cond.requiredValue match {
-        case v: String => JString(v)
-        case v: Int => JInt(v)
-        case v: Double => JDouble(v)
-        case v: Boolean => JBool(v)
-        case None | null => JNull
-        case v => JString(v.toString)
-      }
+      val serializedValue: JValue = Extraction.decompose(new ContextValue(cond.requiredValue))
       JObject(List(typeField, JField("value", serializedValue)))
     }
   }

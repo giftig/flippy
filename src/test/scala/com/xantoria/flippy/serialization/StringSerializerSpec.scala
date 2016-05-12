@@ -7,8 +7,9 @@ import com.xantoria.flippy.BaseSpec
 import com.xantoria.flippy.condition.{Condition, StringConditions}
 
 class StringSerializerSpec extends BaseSpec {
+  val contextSerializer = new ContextValueSerializer()
   val engine = SerializationEngine()
-  implicit val formats = DefaultFormats + engine
+  implicit val formats = DefaultFormats + contextSerializer + engine
 
   "String range serializer" should "deserialize correctly" in {
     val data = """

@@ -7,8 +7,9 @@ import com.xantoria.flippy.BaseSpec
 import com.xantoria.flippy.condition.{Condition, NamespacedCondition}
 
 class SerializerSpec extends BaseSpec {
+  val contextSerializer = new ContextValueSerializer()
   val engine = SerializationEngine()
-  implicit val formats = DefaultFormats + engine
+  implicit val formats = DefaultFormats + contextSerializer + engine
 
   "The serialization engine" should "error if the condition type is unrecognised" in {
     val data = """
