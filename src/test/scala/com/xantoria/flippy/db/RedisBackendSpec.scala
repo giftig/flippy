@@ -29,8 +29,8 @@ class RedisBackendSpec extends BaseSpec with DockerRedis with DockerTestKit {
     val switchName = "ff7-switch"
     val backend = new RedisBackend("localhost", redisPort, "testtesttest")
     val cond = Condition.Equals("Ms. Cloud") on "name"
-    backend.configureSwitch(switchName, cond)
 
+    fin { backend.configureSwitch(switchName, cond) }
     fin { backend.isActive(switchName, Map("name" -> "Ms. Cloud")) } should be (true)
   }
 }
