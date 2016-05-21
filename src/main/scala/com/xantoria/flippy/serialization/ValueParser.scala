@@ -42,7 +42,6 @@ class ContextValueSerializer extends Serializer[ContextValue] {
       case v: Boolean => JBool(v)
       case None | null => JNull
       case v => JString(v.toString)
-      case _ => throw new MappingException("Unable to interpret type provided")
     }
   }
 }
