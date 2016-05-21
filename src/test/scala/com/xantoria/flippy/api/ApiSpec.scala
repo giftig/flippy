@@ -30,6 +30,9 @@ class TestBackend extends Backend {
   override def createSwitch(name: String): Future[Unit] = ???
   override def deleteSwitch(name: String): Future[Unit] = ???
   override def configureSwitch(name: String, condition: Condition): Future[Unit] = ???
+  override def listSwitches(
+    offset: Option[Int], limit: Option[Int]
+  ): Future[List[(String, Condition)]] = ???
 }
 
 class ApiSpec extends BaseSpec with ScalatestRouteTest with APIHandling {
