@@ -1,0 +1,9 @@
+{
+  "condition_type": "namespaced",
+  "attr": "is_staff",
+  "fallback": false,
+  "condition": {
+    "condition_type": "equals",
+    "value": true
+  }
+}

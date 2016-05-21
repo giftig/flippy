@@ -1,0 +1,23 @@
+#!/bin/bash
+
+DIR=$(cd $(dirname $0); pwd -P)
+
+if [[ "$FLIPPY_HOST" == '' ]]; then
+  FLIPPY_HOST=localhost
+fi
+
+if [[ "$FLIPPY_PORT" == '' ]]; then
+  FLIPPY_PORT=9001
+fi
+
+for f in $(ls -1 "$DIR"/../fixtures/*.json); do
+  echo -n "Installing fixture $(basename $f)... "
+  switch_name=$(basename $f | sed -E 's/\.json$//')
+  curl \
+    -s \
+    -X POST \
+    -H 'Content-Type: application/json' \
+    -d "@$f" \
+    "$FLIPPY_HOST:$FLIPPY_PORT$FLIPPY_API_PATH/switch/$switch_name/" || exit 1
+  echo ''
+done

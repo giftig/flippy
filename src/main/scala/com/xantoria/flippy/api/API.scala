@@ -13,15 +13,24 @@ import com.xantoria.flippy.db.Backend
 import com.xantoria.flippy.serialization.ContextValue
 
 /**
- * Represents a switch definition handled by the API
+ * Generic info message about the state of an API request
  */
 case class InfoMessage(success: Boolean = true, reason: Option[String] = None)
+
+/**
+ * Wrapper for an API "is_active" response
+ */
 case class IsActive(result: Boolean)
+
+/**
+ * Represents a switch definition handled by the API
+ */
+case class SwitchConfig(name: String, condition: Condition)
 
 object ErrorMessage {
   def apply(t: Throwable): InfoMessage = InfoMessage(
     success = false,
-    reason = Some("An internal error occurred: ${t.getClass.getName}: ${t.getMessage}")
+    reason = Some(s"An internal error occurred: ${t.getClass.getName}: ${t.getMessage}")
   )
 }
 
@@ -65,6 +74,21 @@ trait APIHandling extends HttpService with LiftJsonSupport {
       }
     }
   }
+
+  def handleSwitchListing = path("switch" ~ Slash.?) {
+    get {
+      parameters("offset".as[Option[Int]]) {
+        offset => onComplete(backend.listSwitches(offset = offset, limit = Some(10))) {
+          case Success(data) => complete(
+            200 -> data.map { s => SwitchConfig(s._1, s._2) }
+          )
+          case Failure(e) => complete(500 -> ErrorMessage(e))
+        }
+      }
+    }
+  }
+
+  def flippyRoutes = handleSwitch ~ handleSwitchListing
 }
 
 class API(val backend: Backend)(
@@ -75,5 +99,5 @@ class API(val backend: Backend)(
 
   val system = context.system
   def actorRefFactory = context
-  def receive = runRoute(handleSwitch)
+  def receive = runRoute(flippyRoutes)
 }

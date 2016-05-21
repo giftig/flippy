@@ -1,0 +1,9 @@
+{
+  "condition_type": "namespaced",
+  "attr": "name",
+  "fallback": false,
+  "condition": {
+    "condition_type": "equals",
+    "value": "Hodor"
+  }
+}

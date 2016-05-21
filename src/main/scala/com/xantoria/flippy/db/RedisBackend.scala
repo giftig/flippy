@@ -25,7 +25,7 @@ class RedisBackend(
    * This is a convenience util to allow collecting multiple configs with one client if desired
    */
   def _switchConfig(name: String, c: RedisClient): Future[Condition] = Future {
-    // TODO: The client supports serializatin; should be able to use c.get[Condiiton] instead
+    // TODO: The client supports serializatin; should be able to use c.get[Condition] instead
     c.get(s"$namespace:$name") map {
       parseJson(_).extract[Condition]
     } getOrElse { Condition.False }
@@ -61,10 +61,12 @@ class RedisBackend(
         _ map {
           response: (Option[Int], Option[List[Option[String]]]) => {
             val cur: Int = response._1 getOrElse 0
-            val flatResult: List[String] = (response._2 getOrElse Nil).flatten
+            val flatResult: List[String] = (response._2 getOrElse Nil).flatten map {
+              _.drop(namespace.length + 1)
+            }
             val data: List[String] = acc ++ flatResult
 
-            if (cur == 0) {
+            if (cur != 0) {
               fetchKeys(cur, data)
             } else {
               Future(data)
