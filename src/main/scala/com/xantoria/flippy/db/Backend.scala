@@ -16,6 +16,8 @@ abstract class Backend {
   def configureSwitch(name: String, condition: Condition): Future[Unit]
   def switchConfig(name: String): Future[Condition]
 
+  def listSwitches(offset: Option[Int], limit: Option[Int]): Future[List[(String, Condition)]]
+
   /**
    * Looks up the switch criteria and checks if it applies, reporting any problems
    *

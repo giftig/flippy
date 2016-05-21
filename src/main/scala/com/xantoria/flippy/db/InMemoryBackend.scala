@@ -22,4 +22,12 @@ class InMemoryBackend(implicit val ec: ExecutionContext) extends Backend {
     }
   }
   def switchConfig(name: String): Future[Condition] = Future(switches(name))
+
+  def listSwitches(
+    offset: Option[Int], limit: Option[Int]
+  ): Future[List[(String, Condition)]] = Future {
+    val from = offset getOrElse 0
+    val to = limit map { _ + from } getOrElse switches.size
+    switches.toList.slice(from, to)
+  }
 }
