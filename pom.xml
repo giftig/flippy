@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.xantoria</groupId>
   <artifactId>flippy</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2-SNAPSHOT</version>
 
   <properties>
     <project.build.scalaVersion>2.10.4</project.build.scalaVersion>
