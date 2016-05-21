@@ -1,6 +1,7 @@
 # Flippy
 
-Easy feature switching for scala applications
+Easy feature switching for scala applications. Can also be run as a standalone service with
+a RESTful HTTP interface.
 
 ## Switch conditions
 
@@ -27,9 +28,21 @@ You can also define your own switch condition by extending `Condition`:
 
 
 ## Backends
+### Redis
 
-Support is currently planned for MySQL, Postgres, and Redis. At the time of writing, this support
-has yet to be completed, and only an "in memory" option is available.
+Due to limitations in the dependent redis client, full support is not yet available
+on redis version 3; there are incompatibilities around the ```SCAN``` operation which
+breaks listing keys.
+
+The backend has been fully tested using redis version ```2.8.21```
+
+### In-memory
+
+This is designed for testing only and is not recommended for production.
+
+### Future support
+
+Support is currently also planned for CouchDB, Postgres, and MySQL
 
 
 ## Serialization
