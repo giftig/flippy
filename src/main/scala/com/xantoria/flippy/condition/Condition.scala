@@ -1,5 +1,7 @@
 package com.xantoria.flippy.condition
 
+import java.security.MessageDigest
+
 abstract class Condition {
   def appliesTo(value: Any): Boolean
 
@@ -24,6 +26,19 @@ object Condition {
 
   case class Not(inverted: Condition) extends Condition {
     override def appliesTo(value: Any) = !inverted.appliesTo(value)
+  }
+
+  case class Proportion(prop: Double) extends Condition {
+    override def appliesTo(value: Any) = {
+      val hashed = MessageDigest.getInstance("sha-1").digest(value.toString.getBytes).map {
+        c => f"$c%02x"
+      }.mkString
+
+      val max = BigDecimal(BigInt("f" * 20, 16))
+      val thresh = max * prop
+      val actual = BigDecimal(BigInt(hashed, 16))
+      actual <= thresh
+    }
   }
 
   case object True extends Condition {
