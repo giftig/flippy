@@ -29,12 +29,11 @@ You can also define your own switch condition by extending `Condition`:
 
 ## Backends
 ### Redis
+Store keys in redis using a configurable prefix. When listing keys, this uses SCAN to fetch them,
+but it has to obtain all of them as redis isn't capable of iterating over keys in a defined
+order. With large numbers of keys, frequent calls to the list endpoint should be avoided, or else
+the results cached (a ```CachedRedisBackend``` is on the roadmap).
 
-Due to limitations in the dependent redis client, full support is not yet available
-on redis version 3; there are incompatibilities around the ```SCAN``` operation which
-breaks listing keys.
-
-The backend has been fully tested using redis version ```2.8.21```
 
 ### In-memory
 

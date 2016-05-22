@@ -85,7 +85,7 @@ class RedisBackend(
     // TODO: Use a dedicated future pool for the Future.traverse here
     keys flatMap {
       keys: List[String] => Future.traverse(keys) {
-        k: String => _switchConfig(k, c) map { conf: Condition => (k, conf) }
+        k: String => _switchConfig(k, client) map { conf: Condition => (k, conf) }
       }
     }
   }
