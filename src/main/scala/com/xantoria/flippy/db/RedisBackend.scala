@@ -17,7 +17,17 @@ class RedisBackend(
   implicit val ec: ExecutionContext,
   implicit val formats: Formats
 ) extends Backend {
+  private final val ALLOWED_SWITCH_PATTERN = """^[\w-_]{1,64}$""".r
+
   private def client = new RedisClient(host, port)
+
+  /**
+   * Make sure the switch name provided is acceptable for this backend, or throw an exception
+   */
+  private def validateName(s: String): Unit = s match {
+    case ALLOWED_SWITCH_PATTERN() => ()
+    case _ => throw new IllegalArgumentException(s"The switch name '$s' is not acceptable")
+  }
 
   /**
    * Use the given RedisClient to fetch switch config
@@ -25,7 +35,8 @@ class RedisBackend(
    * This is a convenience util to allow collecting multiple configs with one client if desired
    */
   def _switchConfig(name: String, c: RedisClient): Future[Condition] = Future {
-    // TODO: The client supports serializatin; should be able to use c.get[Condition] instead
+    validateName(name)
+
     c.get(s"$namespace:$name") map {
       parseJson(_).extract[Condition]
     } getOrElse { Condition.False }
@@ -37,6 +48,8 @@ class RedisBackend(
   }
 
   def configureSwitch(name: String, condition: Condition): Future[Unit] = Future {
+    validateName(name)
+
     val data = writeJson(condition)
     client.set(s"$namespace:$name", data)
   }
