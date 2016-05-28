@@ -54,7 +54,7 @@ class RedisBackend(
     def fetchKeys(cursor: Int = 0, acc: List[String] = Nil): Future[List[String]] = {
       // Yo dawg, I herd you liek Options...
       val res: Future[Option[(Option[Int], Option[List[Option[String]]])]] = Future {
-        c.scan[String](0, s"$namespace:*")
+        c.scan[String](cursor, s"$namespace:*")
       }
 
       res flatMap {
