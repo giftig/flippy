@@ -20,8 +20,13 @@ import com.xantoria.flippy.serialization.SerializationEngine
 class TestBackend extends Backend {
   protected override implicit val ec = global
   val testCondition = Condition.Equals("TestyMcTestFace")
+  val cond404 = "404"
 
-  override def switchConfig(name: String): Future[Condition] = Future(testCondition)
+  override def switchConfig(name: String): Future[Option[Condition]] = if (name == cond404) {
+    Future(None)
+  } else {
+    Future(Some(testCondition))
+  }
   override def isActiveSafe(switchName: String, data: Map[String, Any]): Future[Boolean] = Future(
     true
   )
@@ -44,8 +49,13 @@ class ApiSpec extends BaseSpec with ScalatestRouteTest with APIHandling {
   override implicit def liftJsonFormats: Formats = FlippyFormats
 
   "The switch endpoint" should "respond to a GET with switch config" in {
-    Get("/switch/someswitch/") ~> sealRoute(handleSwitch) ~> check {
+    Get("/switch/someswitch/") ~> sealRoute(flippyRoutes) ~> check {
       responseAs[Condition] shouldBe backend.testCondition
+    }
+  }
+  it should "respond to a GET on a bad switch with a 404" in {
+    Get(s"/switch/${backend.cond404}/") ~> sealRoute(flippyRoutes) ~> check {
+      status.intValue should be (404)
     }
   }
   it should "respond to a POST by updating the config" ignore {
@@ -60,7 +70,7 @@ class ApiSpec extends BaseSpec with ScalatestRouteTest with APIHandling {
     Post(
       "/switch/someswitch/is_active/",
       Map("name" -> "Ms. Cloud", "predictability" -> "of course I used Ms. Cloud again")
-    ) ~> sealRoute(handleSwitch) ~> check {
+    ) ~> sealRoute(flippyRoutes) ~> check {
       val resp = responseAs[IsActive]
       resp.result should be (true)
     }

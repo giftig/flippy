@@ -21,7 +21,7 @@ class InMemoryBackend(implicit val ec: ExecutionContext) extends Backend {
       ()
     }
   }
-  def switchConfig(name: String): Future[Condition] = Future(switches(name))
+  def switchConfig(name: String): Future[Option[Condition]] = Future(switches.get(name))
 
   def listSwitches(
     offset: Option[Int], limit: Option[Int]

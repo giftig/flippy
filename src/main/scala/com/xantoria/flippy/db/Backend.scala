@@ -14,7 +14,7 @@ abstract class Backend {
   def deleteSwitch(name: String): Future[Unit]
 
   def configureSwitch(name: String, condition: Condition): Future[Unit]
-  def switchConfig(name: String): Future[Condition]
+  def switchConfig(name: String): Future[Option[Condition]]
 
   def listSwitches(offset: Option[Int], limit: Option[Int]): Future[List[(String, Condition)]]
 
@@ -26,7 +26,7 @@ abstract class Backend {
    */
   def isActiveSafe(switchName: String, data: Map[String, Any]): Future[Boolean] = {
     switchConfig(switchName) map {
-      case c: Condition => c.appliesTo(data)
+      c: Option[Condition] => c map { _.appliesTo(data) } getOrElse false
     }
   }
 

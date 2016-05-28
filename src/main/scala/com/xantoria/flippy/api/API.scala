@@ -55,7 +55,11 @@ trait APIHandling extends HttpService with LiftJsonSupport {
         } ~
         get {
           onSuccess(backend.switchConfig(switchName)) {
-            cond => complete(200 -> cond)
+            cond: Option[Condition] => cond map {
+              c: Condition => complete(200 -> c)
+            } getOrElse {
+              complete(404 -> InfoMessage(success = false, reason = Some("Switch not found")))
+            }
           }
         } ~
         put {

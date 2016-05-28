@@ -34,12 +34,12 @@ class RedisBackend(
    *
    * This is a convenience util to allow collecting multiple configs with one client if desired
    */
-  def _switchConfig(name: String, c: RedisClient): Future[Condition] = Future {
+  def _switchConfig(name: String, c: RedisClient): Future[Option[Condition]] = Future {
     validateName(name)
 
     c.get(s"$namespace:$name") map {
       parseJson(_).extract[Condition]
-    } getOrElse { Condition.False }
+    }
   }
 
   def createSwitch(name: String): Future[Unit] = Future(())
@@ -53,7 +53,7 @@ class RedisBackend(
     val data = writeJson(condition)
     client.set(s"$namespace:$name", data)
   }
-  def switchConfig(name: String): Future[Condition] = _switchConfig(name, client)
+  def switchConfig(name: String): Future[Option[Condition]] = _switchConfig(name, client)
 
   /**
    * Be sparing with this, as it's not possible to paginate the redis calls in order
@@ -98,7 +98,7 @@ class RedisBackend(
     // TODO: Use a dedicated future pool for the Future.traverse here
     keys flatMap {
       keys: List[String] => Future.traverse(keys) {
-        k: String => _switchConfig(k, client) map { conf: Condition => (k, conf) }
+        k: String => _switchConfig(k, client) map { conf: Option[Condition] => (k, conf.get) }
       }
     }
   }
