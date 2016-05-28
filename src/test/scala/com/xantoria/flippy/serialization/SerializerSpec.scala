@@ -165,6 +165,28 @@ class SerializerSpec extends BaseSpec {
     actual should be (expected)
   }
 
+  "True/false serializers" should "deserialize correctly" in {
+    val trueData = """{"condition_type":"true"}"""
+    val falseData = """{"condition_type":"false"}"""
+
+    val parsedTrue = parse(trueData).extract[Condition]
+    val parsedFalse = parse(falseData).extract[Condition]
+
+    parsedTrue should be (Condition.True)
+    parsedFalse should be (Condition.False)
+  }
+
+  it should "serialize correctly" in {
+    val expectedTrue = """{"condition_type":"true"}"""
+    val expectedFalse = """{"condition_type":"false"}"""
+
+    val actualTrue = Serialization.write(Condition.True)
+    val actualFalse = Serialization.write(Condition.False)
+
+    actualTrue should be (expectedTrue)
+    actualFalse should be (expectedFalse)
+  }
+
   "Namespaced serializer" should "deserialize correctly" in {
     val data = """
       {

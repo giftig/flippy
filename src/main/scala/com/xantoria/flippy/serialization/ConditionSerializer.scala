@@ -45,6 +45,8 @@ object SerializationEngine {
     ConditionSerializer.Equals,
     ConditionSerializer.Not,
     ConditionSerializer.Or,
+    ConditionSerializer.True,
+    ConditionSerializer.False,
     NamespacedConditionSerializer,
     StringConditionSerializers.Range,
     StringConditionSerializers.Regex,
@@ -150,6 +152,24 @@ object ConditionSerializer {
         JField("conditions", JArray(cond.subs map { Extraction.decompose(_) }))
       ))
     }
+  }
+
+  object True extends ConditionSerializer[Condition] {
+    override val typeName: String = "true"
+
+    def canSerialize(c: Condition) = c == Condition.True
+
+    def deserialize(data: JValue)(implicit formats: Formats): Condition = Condition.True
+    def serialize(c: Condition)(implicit formats: Formats): JValue = JObject(List(typeField))
+  }
+
+  object False extends ConditionSerializer[Condition] {
+    override val typeName: String = "false"
+
+    def canSerialize(c: Condition) = c == Condition.False
+
+    def deserialize(data: JValue)(implicit formats: Formats): Condition = Condition.False
+    def serialize(c: Condition)(implicit formats: Formats): JValue = JObject(List(typeField))
   }
 }
 
