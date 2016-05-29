@@ -1,0 +1,77 @@
+body {
+  font-family: Verdana, Tahoma, Arial, sans-serif;
+}
+
+h1 {
+  color: purple;
+}
+
+#flippy-switches .switch {
+  background-color: #eee;
+  padding: 10px 20px;
+}
+#flippy-switches .switch:nth-child(2n) {
+  background-color: #ddd;
+}
+
+#flippy-switches .switch .name {
+  vertical-align: middle;
+  display: inline-block;
+  width: 150px;
+
+  color: #090;
+  font-size: 1.1em;
+}
+
+#flippy-switches .switch .config {
+  vertical-align: middle;
+  display: inline-block;
+  width: 300px;
+  height: 135px;
+
+  color: blue;
+  font-family: monospace;
+  background: none;
+  border: none;
+}
+
+#flippy-switches .switch .config,
+#flippy-switches .switch .name {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.error {
+  border: 2px solid red;
+  background-color: #fcc;
+  padding: 10px;
+
+  display: none;
+}
+.error h1 {
+  color: red;
+  font-size: 1em;
+  font-weight: bold;
+
+  display: inline;
+  margin-right: 20px;
+}
+
+.persist {
+  display: inline-block;
+}
+.persist button {
+  background: none;
+  border-style: solid;
+}
+.persist button:first-child {
+  margin-right: 10px;
+}
+.persist button.save {
+  border-color: #090;
+  color: #090;
+}
+.persist button.cancel {
+  border-color: #900;
+  color: #900;
+}

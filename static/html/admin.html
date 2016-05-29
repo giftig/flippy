@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Flippy admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+      $(function() {
+        var admin = new FlippyAdmin({
+          protocol: null,
+          host: null,
+          port: null,
+          path_prefix: '/flippy/',
+          container: $('#flippy-switches'),
+          error_box: $('#flippy-error')
+        });
+        admin.listSwitches();
+      });
+    </script>
+  </head>
+  <body>
+    <div id="flippy-error" class="error"></div>
+    <article>
+      <h1>Flippy admin</h1>
+      <div id="flippy-switches"></div>
+    </article>
+  </body>
+</html>
