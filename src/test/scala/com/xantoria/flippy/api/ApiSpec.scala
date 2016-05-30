@@ -33,7 +33,7 @@ class TestBackend extends Backend {
   override def isActive(switchName: String, data: Map[String, Any]): Future[Boolean] = Future(true)
 
   override def createSwitch(name: String): Future[Unit] = ???
-  override def deleteSwitch(name: String): Future[Unit] = ???
+  override def deleteSwitch(name: String): Future[Unit] = Future(())
   override def configureSwitch(name: String, condition: Condition): Future[Unit] = ???
   override def listSwitches(
     offset: Option[Int], limit: Option[Int]
@@ -61,8 +61,11 @@ class ApiSpec extends BaseSpec with ScalatestRouteTest with APIHandling {
   it should "respond to a POST by updating the config" ignore {
     throw new RuntimeException("Not yet implemented.")
   }
-  it should "respond to a DELETE by deleting the switch" ignore {
-    throw new RuntimeException("Not yet implemented.")
+  it should "respond to a DELETE with a success" ignore {
+    Delete("/switch/someswitch/") ~> sealRoute(flippyRoutes) ~> check {
+      responseAs[InfoMessage].success should be (true)
+      status.intValue should be (200)
+    }
   }
 
   "The is_active endpoint" should "tell us if a switch is active for the given context" in {

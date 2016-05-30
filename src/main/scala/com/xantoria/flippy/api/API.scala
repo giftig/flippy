@@ -66,7 +66,9 @@ trait APIHandling extends HttpService with LiftJsonSupport {
           complete(400 -> InfoMessage(success = false, reason = Some("Not implemented!")))
         } ~
         delete {
-          complete(400 -> InfoMessage(success = false, reason = Some("Not implemented!")))
+          onSuccess(backend.deleteSwitch(switchName)) {
+            _ => complete(200 -> InfoMessage(success = true))
+          }
         }
       } ~
       path("is_active" ~ Slash.?) {
