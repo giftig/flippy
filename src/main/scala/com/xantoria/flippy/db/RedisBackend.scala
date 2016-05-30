@@ -42,7 +42,6 @@ class RedisBackend(
     }
   }
 
-  def createSwitch(name: String): Future[Unit] = Future(())
   def deleteSwitch(name: String): Future[Unit] = Future {
     client.del(s"$namespace:$name")
   }

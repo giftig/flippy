@@ -32,7 +32,6 @@ class TestBackend extends Backend {
   )
   override def isActive(switchName: String, data: Map[String, Any]): Future[Boolean] = Future(true)
 
-  override def createSwitch(name: String): Future[Unit] = ???
   override def deleteSwitch(name: String): Future[Unit] = Future(())
   override def configureSwitch(name: String, condition: Condition): Future[Unit] = ???
   override def listSwitches(

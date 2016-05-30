@@ -10,7 +10,6 @@ class IncorrectConditionTypeException extends RuntimeException
 abstract class Backend {
   protected implicit val ec: ExecutionContext
 
-  def createSwitch(name: String): Future[Unit]
   def deleteSwitch(name: String): Future[Unit]
 
   def configureSwitch(name: String, condition: Condition): Future[Unit]

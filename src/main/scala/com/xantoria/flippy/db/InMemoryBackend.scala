@@ -9,7 +9,6 @@ import com.xantoria.flippy.condition.Condition
 class InMemoryBackend(implicit val ec: ExecutionContext) extends Backend {
   private val switches = MMap[String, Condition]()
 
-  def createSwitch(name: String): Future[Unit] = Future(())
   def deleteSwitch(name: String): Future[Unit] = Future {
     switches.remove(name)
     ()
