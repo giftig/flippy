@@ -20,7 +20,11 @@ import com.xantoria.flippy.serialization.SerializationEngine
 class TestBackend extends Backend {
   protected override implicit val ec = global
   val testCondition = Condition.Equals("TestyMcTestFace")
+
+  // These are used to show different behaviours without the overhead of full-on mocking
   val cond404 = "404"
+  val condBadPost = "BADPOST"
+  val condBadDelete = "BADDELETE"
 
   override def switchConfig(name: String): Future[Option[Condition]] = if (name == cond404) {
     Future(None)
@@ -32,8 +36,20 @@ class TestBackend extends Backend {
   )
   override def isActive(switchName: String, data: Map[String, Any]): Future[Boolean] = Future(true)
 
-  override def deleteSwitch(name: String): Future[Unit] = Future(())
-  override def configureSwitch(name: String, condition: Condition): Future[Unit] = ???
+  override def deleteSwitch(name: String): Future[Unit] = Future {
+    if (name == condBadDelete) {
+      throw new IllegalArgumentException("Bad DELETE test case")
+    } else {
+      ()
+    }
+  }
+  override def configureSwitch(name: String, condition: Condition): Future[Unit] = Future {
+    if (name == condBadPost) {
+      throw new IllegalArgumentException("Bad POST test case")
+    } else {
+      ()
+    }
+  }
   override def listSwitches(
     offset: Option[Int], limit: Option[Int]
   ): Future[List[(String, Condition)]] = ???
@@ -57,13 +73,33 @@ class ApiSpec extends BaseSpec with ScalatestRouteTest with APIHandling {
       status.intValue should be (404)
     }
   }
-  it should "respond to a POST by updating the config" ignore {
-    throw new RuntimeException("Not yet implemented.")
+  it should "respond to a POST with a success" in {
+    Post("/switch/someswitch/", backend.testCondition) ~> sealRoute(flippyRoutes) ~> check {
+      responseAs[InfoMessage].success should be (true)
+      status.intValue should be (200)
+    }
   }
-  it should "respond to a DELETE with a success" ignore {
+  it should "respond to a DELETE with a success" in {
     Delete("/switch/someswitch/") ~> sealRoute(flippyRoutes) ~> check {
       responseAs[InfoMessage].success should be (true)
       status.intValue should be (200)
+    }
+  }
+
+  // Mocking would be better, but these tests prove that the correct backend methods are hit
+  // by showing that they will present a 500 if the test backend gives them an exception
+  it should "hit configureSwitch on a POST" in {
+    Post(
+      s"/switch/${backend.condBadPost}/", backend.testCondition
+    ) ~> sealRoute(flippyRoutes) ~> check {
+      responseAs[InfoMessage].success should be (false)
+      status.intValue should be (500)
+    }
+  }
+  it should "hit deleteSwitch on a DELETE" in {
+    Delete(s"/switch/${backend.condBadDelete}/") ~> sealRoute(flippyRoutes) ~> check {
+      responseAs[InfoMessage].success should be (false)
+      status.intValue should be (500)
     }
   }
 
