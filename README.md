@@ -101,7 +101,21 @@ set the ```DOCKER_URL``` env var.
     # By default on linux
     export DOCKER_URL=unix:///var/run/docker.sock
 
+## Development setup
+See the [giftig/flippy-tester](https://www.github.com/giftig/flippy-tester/) project for a
+ready-to-go dev environment for this project.
 
 ## Management interface
 
-HTTP user interface coming soon.
+Flippy is currently equipped with a basic HTTP management interface, in /static. The
+recommended approach for serving this interface, and the approach used by the associated
+flippy-tester project, is to use nginx or another web server to serve the static files,
+proxying requests to flippy itself on a path of your choice.
+
+You may need to make an update to the js configuration on the ```admin.html``` page if
+you change the paths used; it assumes that the flippy interface will be under ```/flippy```
+on the same domain as the admin page.
+
+Further work will be put into making the admin interface more user friendly and easier to
+serve the pages without modification in the near future; for the moment the interface is
+a prototype.
