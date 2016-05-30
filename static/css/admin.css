@@ -57,21 +57,51 @@ h1 {
   margin-right: 20px;
 }
 
-.persist {
+#flippy-switches .controls {
+  margin-bottom: 20px;
+}
+
+#flippy-switches .controls .extended {
+  display: none;
+}
+
+#flippy-switches .new-switch-controls input.name {
+  border: none;
+  border-bottom: 1px solid black;
+  color: blue;
+  font-family: monospace;
+  margin-right: 20px;
+}
+
+#flippy-switches .persist {
   display: inline-block;
 }
-.persist button {
+#flippy-switches button {
   background: none;
   border-style: solid;
 }
-.persist button:first-child {
+#flippy-switches .persist button:not(:last-child) {
   margin-right: 10px;
 }
-.persist button.save {
+#flippy-switches button.save,
+#flippy-switches button.confirm,
+#flippy-switches .controls button.new-switch {
   border-color: #090;
   color: #090;
 }
-.persist button.cancel {
+#flippy-switches .persist button.cancel,
+#flippy-switches .persist button.delete {
   border-color: #900;
   color: #900;
+}
+
+#flippy-switches button.show-more {
+  border: none;
+  background: none;
+  color: blue;
+  cursor: pointer;
+  margin-top: 10px;
+}
+#flippy-switches .load-more:hover {
+  text-decoration: underline;
 }
