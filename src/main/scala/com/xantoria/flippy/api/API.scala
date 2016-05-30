@@ -67,7 +67,7 @@ trait APIHandling extends HttpService with LiftJsonSupport {
         } ~
         delete {
           onSuccess(backend.deleteSwitch(switchName)) {
-            _ => complete(200 -> InfoMessage(success = true))
+            _ => complete(200 -> InfoMessage())
           }
         }
       } ~
