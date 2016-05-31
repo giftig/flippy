@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.xantoria</groupId>
   <artifactId>flippy</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1-SNAPSHOT</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>A feature switching module for scala applications</description>
