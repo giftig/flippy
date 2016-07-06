@@ -92,7 +92,7 @@ class MirrorBackend(
     }.toMap
 
     listPipeline {
-      Get(baseUrl.withPath(Uri.Path(s"/switch/")).withQuery(Uri.Query(params)))
+      Get(baseUrl.withPath(Uri.Path("/switch/")).withQuery(Uri.Query(params)))
     } map {
       _.map { cfg: SwitchConfig => (cfg.name, cfg.condition) }
     }
