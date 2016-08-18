@@ -13,6 +13,7 @@
 
     self.baseUrl = self.admin.baseUrl;
     self.displayError = self.admin.displayError;
+    self.displaySuccess = self.admin.displaySuccess;
 
     self.render = function(details) {
       // TODO: This needs to be aware of various types of switches and allow
@@ -39,6 +40,11 @@
             $save.attr('disabled', false);
             $conf.text(data);
             $conf.val(data);
+
+            self.displaySuccess(
+              'Switch <span class="switch-name">' + self.name + '</span> successfully updated.',
+              'Switch saved'
+            );
           };
           var err = function() {
             $save.attr('disabled', false);
@@ -126,8 +132,9 @@
       );
     }
 
-    self.$errorBox = cfg.error_box || $('#flippy-error');
-    self.$errorBox.click(function() {
+    self.$msgBox = cfg.message_box || $('#flippy-admin-message');
+    self.$msgBox.addClass('flippy-admin-message');
+    self.$msgBox.click(function() {
       $(this).hide();
     });
 
@@ -199,15 +206,23 @@
 
     };
 
-    // TODO: Make this nicer
-    self.displayError = function(msg, title) {
-      self.$errorBox.empty();
+    self.displayMessage = function(msg, title, type) {
+      self.$msgBox.hide();
+      self.$msgBox.empty();
 
       if (title) {
-        self.$errorBox.html($('<h1>').text(title));
+        self.$msgBox.html($('<h1>').text(title));
       }
-      self.$errorBox.append($('<span>').text(msg));
-      self.$errorBox.show();
+      self.$msgBox.append($('<span>').html(msg));
+
+      self.$msgBox[type === 'error' ? 'addClass' : 'removeClass']('error');
+      self.$msgBox.show();
+    };
+    self.displaySuccess = self.displayInfo = function(msg, title) {
+      self.displayMessage(msg, title, 'info');
+    };
+    self.displayError = function(msg, title) {
+      self.displayMessage(msg, title, 'error');
     };
 
     self.render = function() {

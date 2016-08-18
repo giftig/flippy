@@ -41,20 +41,31 @@ h1 {
   vertical-align: middle;
 }
 
-.error {
-  border: 2px solid red;
-  background-color: #fcc;
+.flippy-admin-message {
+  border: 2px solid #eee;
+  background-color: #eee;
   padding: 10px;
-
   display: none;
+
+  cursor: pointer;
 }
-.error h1 {
-  color: red;
+.flippy-admin-message.error {
+  border-color: red;
+  background-color: #fcc;
+}
+.flippy-admin-message h1 {
+  color: grey;
   font-size: 1em;
   font-weight: bold;
 
   display: inline;
   margin-right: 20px;
+}
+.flippy-admin-message.error h1 {
+  color: red;
+}
+.flippy-admin-message .switch-name {
+  font-family: monospace;
 }
 
 #flippy-switches .controls {
