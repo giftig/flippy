@@ -1,5 +1,5 @@
 (function($) {
-  var DEFAULT_CONDITION = {condition_type: 'False'};
+  var DEFAULT_CONDITION = {condition_type: 'false'};
   var $errorBox;
 
   // Controls for building a switch
