@@ -26,6 +26,8 @@ You can also define your own switch condition by extending `Condition`:
     backend.configureSwitch("lotsofdamage", condition)
     backend.isActive("lotsofdamage", Map("name" -> "Cloud", "HP" -> 7777))  // on
 
+For more information, see [the conditions overview](readme-resources/conditions.md)
+
 
 ## Backends
 ### Redis
