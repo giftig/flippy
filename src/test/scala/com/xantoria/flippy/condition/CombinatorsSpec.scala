@@ -1,6 +1,7 @@
 package com.xantoria.flippy.condition
 
 import org.scalatest._
+
 import com.xantoria.flippy.BaseSpec
 
 class CombinatorsSpec extends BaseSpec {

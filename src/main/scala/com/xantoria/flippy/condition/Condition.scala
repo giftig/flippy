@@ -25,11 +25,11 @@ object Condition {
   }
 
   case class Not(inverted: Condition) extends Condition {
-    override def appliesTo(value: Any) = !inverted.appliesTo(value)
+    override def appliesTo(value: Any): Boolean = !inverted.appliesTo(value)
   }
 
   case class Proportion(prop: Double) extends Condition {
-    override def appliesTo(value: Any) = {
+    override def appliesTo(value: Any): Boolean = {
       val hashed = MessageDigest.getInstance("sha-1").digest(value.toString.getBytes).map {
         c => f"$c%02x"
       }.mkString
