@@ -20,7 +20,7 @@ object NetworkingSerializer {
       val cond = c.asInstanceOf[Networking.IPRange]
       JObject(List(
         typeField,
-        JField("range", JString("${cond.addr.getHostAddress}/${cond.prefix}"))
+        JField("range", JString(s"${cond.addr.getHostAddress}/${cond.prefix}"))
       ))
     }
 

@@ -19,7 +19,7 @@ class SerializerSpec extends BaseSpec {
       }
     """
     assume(!engine.conditionTypes.contains("emerald_weapon"))
-    an [MappingException] should be thrownBy parse(data).extract[Condition]
+    a [MappingException] should be thrownBy parse(data).extract[Condition]
   }
 
   "Equals serialiser" should "deserialize correctly" in {
