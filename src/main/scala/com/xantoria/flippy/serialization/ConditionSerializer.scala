@@ -50,7 +50,8 @@ object SerializationEngine {
     NamespacedConditionSerializer,
     StringConditionSerializers.Range,
     StringConditionSerializers.Regex,
-    StringConditionSerializers.Substring
+    StringConditionSerializers.Substring,
+    NetworkingSerializer.IPRange
   )
 
   def apply(): SerializationEngine = new SerializationEngine(DEFAULTS)
