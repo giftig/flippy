@@ -2,6 +2,207 @@
   var DEFAULT_CONDITION = {condition_type: 'false'};
   var $errorBox;
 
+  var ConditionWidgets = {};
+  var baseConditions = ['namespaced', 'multiple'];
+  var subConditions = ['equals', 'namespaced', 'multiple'];
+
+  subConditions.asOptions = function(defaultLabel) {
+    defaultLabel = defaultLabel || 'Select condition';
+
+    var $conditions = $('<select>');
+    $conditions.append($('<option>').val('').text(defaultLabel));
+
+    for (var i = 0; i < subConditions.length; i++) {
+      var cond = subConditions[i];
+      var $opt = $('<option>').text(cond).val(cond);
+      $conditions.append($opt);
+    }
+
+    return $conditions;
+  };
+
+  /*
+   * All widgets must define:
+   *
+   * renderForm:  render a form to help configure the widget
+   * buildJSON:   build javascript objects representing the JSON structure
+   * clean:       pull in completed form data and verify it; return whether it's valid
+   */
+  ConditionWidgets.namespaced = function() {
+    var self = this;
+
+    self.field = null;
+    self.condition = null;
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg namespaced');
+      var $field = $('<input>').attr('name', 'field');
+      var $fallback = $('<select>').attr('name', 'fallback').append(
+        $('<option>').val('').text('Select fallback'),
+        $('<option>').val('true').text('true'),
+        $('<option>').val('false').text('false')
+      );
+
+      var $conditions = subConditions.asOptions('Select condition').attr('name', 'condition');
+
+      $conditions.on('change', function() {
+        var condName = $(this).val();
+        var $oldSubform = $form.find('.subcondition');
+
+        if (!condName) {
+          $oldSubform.remove();
+          self.condition = null;
+          return;
+        }
+
+        var sub = new ConditionWidgets[condName]();
+        self.condition = sub;
+        var $subform = sub.renderForm().addClass('subcondition');
+
+        if ($oldSubform.length === 0) {
+          $form.append($subform);
+        } else {
+          $oldSubform.replaceWith($subform);
+        }
+        $oldSubform.html($subform);
+      });
+
+      $form.html($field).append($conditions);
+
+      // Labelling
+      $field.before('The field ');
+      $field.after(' ... ');
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      self.field = self.$form.find('[name="field"]').val();
+
+      if (!self.condition.clean()) {
+        return false;
+      }
+
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return {
+        condition_type: 'namespaced',
+        attr: self.field,
+        condition: self.condition.buildJSON(),
+        fallback: self.fallback
+      }
+    };
+  };
+
+  ConditionWidgets.equals = function() {
+    var self = this;
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg equals');
+      var $field = $('<input>').attr('name', 'value');
+      $form.append($field);
+
+      // Labelling
+      $field.before('...must equal ');
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      var value = self.$form.find('[name="value"]').val();
+
+      // Handle data types
+      if (value.match(/^\d+\.\d+$/)) {
+        self.value = parseFloat(value);
+      } else if (value.match(/^\d+$/)) {
+        self.value = parseInt(value);
+      } else if (value === 'true' || value === 'false') {
+        self.value = value === 'true';
+      } else if (value === 'null') {
+        self.value = null;
+      } else {
+        self.value = value;
+      }
+
+      return true;
+    };
+    self.buildJSON = function() {
+      return {condition_type: 'equals', value: self.value};
+    };
+  };
+
+  // For and/or condition lists
+  ConditionWidgets.multiple = function() {
+    var self = this;
+    self.conditions = [];
+    self.conditionType = null;
+    var nextIndex = 0;
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg multi');
+      var $type = $('<select>').attr('name', 'type').append(
+        $('<option>').text('all').val('and'),
+        $('<option>').text('one').val('or')
+      );
+      var $stagingArea = $('<div>');
+      var $another = subConditions.asOptions('Add condition').on('change', function() {
+        var condType = $(this).val();
+        if (!condType) {
+          return;
+        }
+        var cond = new ConditionWidgets[condType]();
+        cond.index = nextIndex++;
+        self.conditions.push(cond);
+
+        var $cond = cond.renderForm();
+        $cond.append($('<button>').attr('type', 'button').addClass('cancel').text('Remove').click(function() {
+          self.conditions = self.conditions.filter(function(c) {
+            return c.index !== cond.index;
+          });
+          $cond.remove();
+        }));
+
+        $stagingArea.append($cond);
+        $another.val('');
+      });
+
+      $form.html($type);
+      $type.after(' of the following must be true:');
+      $form.append($another);
+      $form.append($stagingArea);
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      if (self.conditions.length === 0) {
+        return false;
+      }
+      self.conditionType = self.$form.find('[name="type"]').val();
+
+      for (var i = 0; i < self.conditions.length; i++) {
+        if (!self.conditions[i].clean()) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return {
+        condition_type: self.conditionType,
+        conditions: self.conditions.map(function(c) {
+          return c.buildJSON();
+        })
+      };
+    };
+  };
+
   // Controls for building a switch
   var SwitchBuilder = function(initial, admin) {
     var self = this;
@@ -20,11 +221,12 @@
       // modifying it with a nice GUI. For now, we'll edit raw JSON instead
       var $controls = $('<div>').addClass('switch').attr('data-name', self.name);
       $controls.append($('<span>').addClass('name').text(self.name));
-      $controls.append(
-        $('<textarea>').addClass('config').text(
-          JSON.stringify(self.condition, null, '  ')
-        )
+      var $underlyingData = $('<textarea>').addClass('config').text(
+        JSON.stringify(self.condition, null, '  ')
       );
+      $controls.append($underlyingData);
+      $controls.append(self.renderGui($underlyingData));
+
       var $persistControls = $('<div>').addClass('persist');
       var $saveButton = $('<button>')
         .text('Save')
@@ -56,6 +258,7 @@
       $cancelButton.click(function() {
         var $conf = $(this).parents('.switch').find('.config');
         $conf.val($conf.text());
+        $controls.find('.switch-builder').replaceWith(self.renderGui());
       });
 
       var $deleteButton = $('<button>').text('Delete').addClass('delete');
@@ -69,7 +272,45 @@
 
       $persistControls.append($saveButton).append($cancelButton).append($deleteButton);
       $controls.append($persistControls);
-      return $controls;
+
+      self.$controls = $controls;
+      return self.$controls;
+    };
+
+    self.renderGui = function($underlying) {
+      var $builder = $('<div>').addClass('switch-builder');
+      var $select = $('<select>').addClass('main-condition-selector');
+      $select.append($('<option>').val('').text('Choose one'));
+
+      for (var i = 0; i < baseConditions.length; i++) {
+        var cond = baseConditions[i];
+        var $opt = $('<option>').val(cond).text(cond);
+        $select.append($opt);
+      }
+
+      $select.on('change', function() {
+        var condValue = $(this).val();
+        if (!condValue) {
+          return;
+        }
+
+        var cond = new ConditionWidgets[condValue]();
+        var $condForm = cond.renderForm();
+        var $submit = $('<input>').attr('type', 'submit').addClass('save').val('Update JSON');
+        $condForm.append($submit);
+        $condForm.on('submit', function(e) {
+          e.preventDefault();
+
+          if (!cond.clean()) {
+            return false;
+          }
+          $underlying.text(JSON.stringify(cond.buildJSON(), null, 2));
+          return false;
+        });
+        $builder.html($condForm);
+      });
+      $builder.html($select);
+      return $builder;
     };
 
     self.updateSwitch = function(switchContent, success, err) {

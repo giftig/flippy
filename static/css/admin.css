@@ -95,10 +95,13 @@ h1 {
   margin-right: 10px;
 }
 #flippy-switches button.save,
+#flippy-switches input[type="submit"].save,
 #flippy-switches button.confirm,
 #flippy-switches .controls button.new-switch {
   border-color: #090;
+  border-style: solid;
   color: #090;
+  background: none;
 }
 #flippy-switches .persist button.cancel,
 #flippy-switches .persist button.delete {
@@ -115,4 +118,45 @@ h1 {
 }
 #flippy-switches .load-more:hover {
   text-decoration: underline;
+}
+
+#flippy-switches .condition-cfg {
+  border-left: 2px solid;
+  margin: 5px 5px 5px 15px;
+  padding: 5px 5px 5px 15px;
+
+  font-weight: bold;
+  font-size: 12px;
+}
+
+#flippy-switches .condition-cfg.namespaced {
+  border-color: #999;
+  color: #999;
+  background-color: #fff;
+}
+#flippy-switches .condition-cfg.equals {
+  border-color: #009;
+  color: #009;
+  background-color: #eef;
+}
+#flippy-switches .condition-cfg.multi {
+  border-color: #900;
+  color: #900;
+  background-color: #fee;
+}
+
+#flippy-switches .condition-cfg input:not(:first-child),
+#flippy-switches .condition-cfg select:not(:first-child) {
+  margin-left: 10px;
+}
+
+#flippy-switches .condition-cfg input:not([type]) {
+  color: inherit;
+  border: none;
+  background: none;
+
+  border-bottom: 1px solid;
+  padding-left: 10px;
+  font-family: monospace;
+  font-size: 1.2em;
 }
