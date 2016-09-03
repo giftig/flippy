@@ -10,7 +10,25 @@
     multiple: 'and/or',
     namespaced: 'field selection',
   };
-  var baseConditions = ['namespaced', 'multiple', 'not'];
+
+  // Map of official serialisation names to internal class names
+  var conditionTypes = {
+    and: 'multiple',
+    'false': 'off',
+    'networking:iprange': 'ip_range',
+    or: 'multiple',
+    'string:regex': 'regex',
+    'substring:regex': 'substring',
+    'true': 'on'
+  };
+
+  var createCondition = function(name) {
+    var t = conditionTypes[name] || name;
+    var Condition = ConditionWidgets[t];
+    return Condition ? new Condition() : null;
+  };
+
+  var baseConditions = ['namespaced', 'multiple', 'not', 'on', 'off'];
   var subConditions = ['equals', 'namespaced', 'multiple', 'not', 'regex', 'substring', 'ip_range'];
 
   // Convenience function for generating option lists from available conditions
@@ -37,6 +55,7 @@
   /*
    * All widgets must define:
    *
+   * init:        initialise the widget's form with data provided
    * renderForm:  render a form to help configure the widget
    * buildJSON:   build javascript objects representing the JSON structure
    * clean:       pull in completed form data and verify it; return whether it's valid
@@ -46,6 +65,22 @@
 
     self.field = null;
     self.condition = null;
+
+    self.init = function(data) {
+      self.renderForm();
+
+      var c = createCondition(data.condition.condition_type);
+      self.condition = c;
+
+      self.$form.children('[name="field"]').val(data.attr);
+      self.$form.children('[name="fallback"]').val(data.fallback);
+      self.$form.children('[name="condition"]').val(
+        conditionTypes[data.condition.condition_type] || data.condition.condition_type
+      );
+      self.$form.append(c.init(data.condition).addClass('subcondition'));
+
+      return self.$form;
+    };
 
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg namespaced');
@@ -60,7 +95,7 @@
 
       $conditions.on('change', function() {
         var condName = $(this).val();
-        var $oldSubform = $form.find('.subcondition');
+        var $oldSubform = $form.children('.subcondition');
 
         if (!condName) {
           $oldSubform.remove();
@@ -81,6 +116,10 @@
 
       $form.html($field).append($conditions);
 
+      $form.addSubmit = function($submit) {
+        $conditions.after($submit);
+      };
+
       // Labelling
       $field.before('The field ');
       $field.after(' ... ');
@@ -89,7 +128,7 @@
     };
 
     self.clean = function() {
-      self.field = self.$form.find('[name="field"]').val();
+      self.field = self.$form.children('[name="field"]').val();
 
       return !!self.condition && self.condition.clean();
     };
@@ -108,13 +147,26 @@
     var self = this;
     var condition = null;
 
+    self.init = function(data) {
+      self.renderForm();
+
+      var c = createCondition(data.condition.condition_type);
+      self.condition = c;
+      self.$form.append(c.init(data.condition).addClass('subcondition'));
+      self.$form.children('[name="condition"]').val(
+        conditionTypes[data.condition.condition_type] || data.condition.condition_type
+      );
+
+      return self.$form;
+    };
+
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg not');
       var $conditions = subConditions.asOptions('Select condition').attr('name', 'condition');
 
       $conditions.on('change', function() {
         var condName = $(this).val();
-        var $oldSubform = $form.find('.subcondition');
+        var $oldSubform = $form.children('.subcondition');
 
         if (!condName) {
           $oldSubform.remove();
@@ -134,9 +186,14 @@
       });
 
       $form.html($conditions);
-      $conditions.before('NOT ');
 
       // Labelling
+      $conditions.before('NOT ');
+
+      $form.addSubmit = function($submit) {
+        $conditions.after($submit);
+      };
+
       self.$form = $form;
       return $form;
     };
@@ -144,6 +201,7 @@
     self.clean = function() {
       return !!self.condition && self.condition.clean();
     };
+
     self.buildJSON = function() {
       return {
         condition_type: 'not',
@@ -154,6 +212,20 @@
 
   ConditionWidgets.equals = function() {
     var self = this;
+
+    self.init = function(data) {
+      self.renderForm();
+
+      var value;
+      if (data.value === null) {
+        value = 'null';
+      } else {
+        value = data.value;
+      }
+
+      self.$form.children('[name="value"]').val(value);
+      return self.$form;
+    };
 
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg equals');
@@ -168,7 +240,7 @@
     };
 
     self.clean = function() {
-      var value = self.$form.find('[name="value"]').val();
+      var value = self.$form.children('[name="value"]').val();
 
       // Handle data types
       if (value.match(/^\d+\.\d+$/)) {
@@ -190,6 +262,55 @@
     };
   };
 
+  ConditionWidgets.on = function() {
+    var self = this;
+
+    self.init = function(data) {
+      self.renderForm();
+      return self.$form;
+    };
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg always-on');
+      $form.html($('<span>').addClass('on-off').text('Always on'));
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return {condition_type: 'true'};
+    };
+  };
+  ConditionWidgets.off = function() {
+    var self = this;
+
+    self.init = function(data) {
+      self.renderForm();
+      return self.$form;
+    };
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg always-off');
+      $form.html($('<span>').addClass('on-off').text('Always off'));
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return {condition_type: 'false'};
+    };
+  };
+
   // For and/or condition lists
   ConditionWidgets.multiple = function() {
     var self = this;
@@ -197,13 +318,28 @@
     self.conditionType = null;
     var nextIndex = 0;
 
+    self.init = function(data) {
+      self.renderForm();
+
+      self.$form.children('[name="type"]').val(data.condition_type);
+
+      for (var i = 0; i < data.conditions.length; i++) {
+        var c = createCondition(data.conditions[i].condition_type);
+
+        self.$form.children('.stage').append(c.init(data.conditions[i]));
+        self.conditions.push(c);
+      }
+
+      return self.$form;
+    };
+
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg multi');
       var $type = $('<select>').attr('name', 'type').append(
         $('<option>').text('all').val('and'),
         $('<option>').text('one').val('or')
       );
-      var $stagingArea = $('<div>');
+      var $stagingArea = $('<div>').addClass('stage');
       var $another = subConditions.asOptions('Add condition').on('change', function() {
         var condType = $(this).val();
         if (!condType) {
@@ -241,7 +377,7 @@
       if (self.conditions.length === 0) {
         return false;
       }
-      self.conditionType = self.$form.find('[name="type"]').val();
+      self.conditionType = self.$form.children('[name="type"]').val();
 
       for (var i = 0; i < self.conditions.length; i++) {
         if (!self.conditions[i].clean()) {
@@ -266,6 +402,12 @@
     var self = this;
     self.value = null;
 
+    self.init = function(data) {
+      self.renderForm();
+      self.$form.children('[name="value"]').val(data.value);
+      return self.$form;
+    };
+
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg substring');
       var $value = $('<input>').attr('name', 'value');
@@ -279,7 +421,7 @@
     };
 
     self.clean = function() {
-      self.value = self.$form.find('[name="value"]').val();
+      self.value = self.$form.children('[name="value"]').val();
       return true;
     };
     self.buildJSON = function() {
@@ -289,6 +431,13 @@
   ConditionWidgets.regex = function() {
     var self = this;
     self.pattern = null;
+
+    self.init = function(data) {
+      self.renderForm();
+
+      self.$form.children('[name="pattern"]').val(data.pattern);
+      return self.$form;
+    };
 
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg regex');
@@ -303,7 +452,7 @@
     };
 
     self.clean = function() {
-      self.pattern = self.$form.find('[name="pattern"]').val();
+      self.pattern = self.$form.children('[name="pattern"]').val();
       return true;
     };
     self.buildJSON = function() {
@@ -314,6 +463,12 @@
   ConditionWidgets.ip_range = function() {
     var self = this;
     self.range = null;
+
+    self.init = function(data) {
+      self.renderForm();
+      self.$form.children('[name="range"]').val(data.range);
+      return self.$form;
+    };
 
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg iprange');
@@ -328,7 +483,7 @@
     };
 
     self.clean = function() {
-      self.range = self.$form.find('[name="range"]').val();
+      self.range = self.$form.children('[name="range"]').val();
       return true;
     };
     self.buildJSON = function() {
@@ -349,7 +504,7 @@
     self.displayError = self.admin.displayError;
     self.displaySuccess = self.admin.displaySuccess;
 
-    self.render = function(details) {
+    self.render = function() {
       // TODO: This needs to be aware of various types of switches and allow
       // modifying it with a nice GUI. For now, we'll edit raw JSON instead
       var $controls = $('<div>').addClass('switch').attr('data-name', self.name);
@@ -358,7 +513,7 @@
         JSON.stringify(self.condition, null, '  ')
       );
       $controls.append($underlyingData);
-      $controls.append(self.renderGui($underlyingData));
+      $controls.append(self.renderGui(self.condition, $underlyingData));
 
       var $persistControls = $('<div>').addClass('persist');
       var $saveButton = $('<button>')
@@ -391,7 +546,9 @@
       $cancelButton.click(function() {
         var $conf = $(this).parents('.switch').find('.config');
         $conf.val($conf.text());
-        $controls.find('.switch-builder').replaceWith(self.renderGui());
+        $controls.find('.switch-builder').replaceWith(
+          self.renderGui(self.condition, $underlyingData)
+        );
       });
 
       var $deleteButton = $('<button>').text('Delete').addClass('delete');
@@ -410,18 +567,18 @@
       return self.$controls;
     };
 
-    self.renderGui = function($underlying) {
+    self.renderGui = function(initial, $underlying) {
       var $builder = $('<div>').addClass('switch-builder');
       var $select = baseConditions.asOptions().addClass('main-condition-selector');
+      var $stage = $('<div>').addClass('stage');
 
-      $select.on('change', function() {
-        var condValue = $(this).val();
-        if (!condValue) {
+      var renderWidget = function(type, data) {
+        if (!type) {
           return;
         }
 
-        var cond = new ConditionWidgets[condValue]();
-        var $condForm = cond.renderForm();
+        var cond = new ConditionWidgets[type]();
+        var $condForm = data ? cond.init(data) : cond.renderForm();
         var $submit = $('<input>').attr('type', 'submit').addClass('save').val('Update JSON');
 
         // Some widgets will annotate an addSubmit onto the form if it doesn't belong at the end
@@ -436,9 +593,16 @@
           $underlying.text(JSON.stringify(cond.buildJSON(), null, 2));
           return false;
         });
-        $builder.html($condForm);
+
+        $stage.html($condForm);
+      };
+
+      $select.on('change', function() {
+        renderWidget($(this).val());
       });
-      $builder.html($select);
+
+      renderWidget(conditionTypes[initial.condition_type] || initial.condition_type, initial);
+      $builder.html($select).append($stage);
       return $builder;
     };
 

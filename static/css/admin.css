@@ -157,6 +157,17 @@ h1 {
   background-color: #fee;
 }
 
+#flippy-switches .condition-cfg.always-on {
+  border-color: #090;
+  color: #090;
+  background-color: #efe;
+}
+#flippy-switches .condition-cfg.always-off {
+  border-color: #900;
+  color: #900;
+  background-color: #fee;
+}
+
 #flippy-switches .condition-cfg input:not(:first-child),
 #flippy-switches .condition-cfg select:not(:first-child) {
   margin-left: 10px;
@@ -171,4 +182,8 @@ h1 {
   padding-left: 10px;
   font-family: monospace;
   font-size: 1.2em;
+}
+
+#flippy-switches .condition-cfg .on-off {
+  margin-right: 20px;
 }
