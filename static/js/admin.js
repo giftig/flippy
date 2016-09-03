@@ -6,11 +6,12 @@
 
   // Pretty names. Default to the same name if not present in this mapping
   var conditionAliases = {
+    ip_range: 'IPv4 range',
+    multiple: 'and/or',
     namespaced: 'field selection',
-    multiple: 'and/or'
   };
   var baseConditions = ['namespaced', 'multiple', 'not'];
-  var subConditions = ['equals', 'namespaced', 'multiple', 'not'];
+  var subConditions = ['equals', 'namespaced', 'multiple', 'not', 'regex', 'substring', 'ip_range'];
 
   // Convenience function for generating option lists from available conditions
   var generateConditionList = function(conditions, defaultLabel) {
@@ -258,6 +259,80 @@
           return c.buildJSON();
         })
       };
+    };
+  };
+
+  ConditionWidgets.substring = function() {
+    var self = this;
+    self.value = null;
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg substring');
+      var $value = $('<input>').attr('name', 'value');
+      $form.html($value);
+
+      // Labelling
+      $value.before('...must contain substring ');
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      self.value = self.$form.find('[name="value"]').val();
+      return true;
+    };
+    self.buildJSON = function() {
+      return {condition_type: 'string:substring', value: self.value};
+    };
+  };
+  ConditionWidgets.regex = function() {
+    var self = this;
+    self.pattern = null;
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg regex');
+      var $pattern = $('<input>').attr('name', 'pattern');
+      $form.html($pattern);
+
+      // Labelling
+      $pattern.before('...must match regular expression ');
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      self.pattern = self.$form.find('[name="pattern"]').val();
+      return true;
+    };
+    self.buildJSON = function() {
+      return {condition_type: 'string:regex', pattern: self.pattern};
+    };
+  };
+
+  ConditionWidgets.ip_range = function() {
+    var self = this;
+    self.range = null;
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg iprange');
+      var $range = $('<input>').attr('name', 'range');
+      $form.html($range);
+
+      // Labelling
+      $range.before('...must be in IPv4 range ');
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      self.range = self.$form.find('[name="range"]').val();
+      return true;
+    };
+    self.buildJSON = function() {
+      return {condition_type: 'networking:iprange', range: self.range};
     };
   };
 

@@ -139,6 +139,13 @@ h1 {
   color: #009;
   background-color: #eef;
 }
+#flippy-switches .condition-cfg.iprange,
+#flippy-switches .condition-cfg.regex,
+#flippy-switches .condition-cfg.substring {
+  border-color: #099;
+  color: #099;
+  background-color: #eff;
+}
 #flippy-switches .condition-cfg.multi {
   border-color: #909;
   color: #909;
