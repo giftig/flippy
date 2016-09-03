@@ -187,3 +187,6 @@ h1 {
 #flippy-switches .condition-cfg .on-off {
   margin-right: 20px;
 }
+#flippy-switches .condition-cfg .fallback {
+  max-width: 80px;
+}

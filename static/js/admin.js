@@ -73,7 +73,7 @@
       self.condition = c;
 
       self.$form.children('[name="field"]').val(data.attr);
-      self.$form.children('[name="fallback"]').val(data.fallback);
+      self.$form.children('[name="fallback"]').val(data.fallback + '');
       self.$form.children('[name="condition"]').val(
         conditionTypes[data.condition.condition_type] || data.condition.condition_type
       );
@@ -85,7 +85,7 @@
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg namespaced');
       var $field = $('<input>').attr('name', 'field');
-      var $fallback = $('<select>').attr('name', 'fallback').append(
+      var $fallback = $('<select>').attr('name', 'fallback').addClass('fallback').append(
         $('<option>').val('').text('Select fallback'),
         $('<option>').val('true').text('true'),
         $('<option>').val('false').text('false')
@@ -114,7 +114,7 @@
         }
       });
 
-      $form.html($field).append($conditions);
+      $form.html($field).append($fallback).append($conditions);
 
       $form.addSubmit = function($submit) {
         $conditions.after($submit);
@@ -129,6 +129,7 @@
 
     self.clean = function() {
       self.field = self.$form.children('[name="field"]').val();
+      self.fallback = self.$form.children('[name="fallback"]').val() === 'true';
 
       return !!self.condition && self.condition.clean();
     };
