@@ -6,5 +6,6 @@ class ConditionSuite extends Suites(
   new BasicConditionsSpec,
   new CombinatorsSpec,
   new NetworkingSpec,
+  new ProportionSpec,
   new StringConditionsSpec
 )

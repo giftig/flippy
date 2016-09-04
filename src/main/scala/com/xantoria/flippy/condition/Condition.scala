@@ -36,7 +36,7 @@ object Condition {
 
       val max = BigDecimal(BigInt("f" * 20, 16))
       val thresh = max * prop
-      val actual = BigDecimal(BigInt(hashed, 16))
+      val actual = BigDecimal(BigInt(hashed.take(20), 16))
       actual <= thresh
     }
   }

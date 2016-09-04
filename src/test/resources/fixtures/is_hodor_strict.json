@@ -1,0 +1,58 @@
+{
+  "condition_type": "and",
+  "conditions": [
+    {
+      "condition_type": "namespaced",
+      "attr": "name",
+      "condition": {
+        "condition_type": "and",
+        "conditions": [
+          {
+            "condition_type": "namespaced",
+            "attr": "first",
+            "condition": {
+              "condition_type": "equals",
+              "value": "Hodor"
+            },
+            "fallback": false
+          },
+          {
+            "condition_type": "namespaced",
+            "attr": "last",
+            "condition": {
+              "condition_type": "not",
+              "condition": {
+                "condition_type": "equals",
+                "value": null
+              }
+            },
+            "fallback": false
+          }
+        ]
+      },
+      "fallback": false
+    },
+    {
+      "condition_type": "namespaced",
+      "attr": "ip_address",
+      "condition": {
+        "condition_type": "or",
+        "conditions": [
+          {
+            "condition_type": "networking:iprange",
+            "range": "192.168.1.0/24"
+          },
+          {
+            "condition_type": "networking:iprange",
+            "range": "10.0.0.0/16"
+          },
+          {
+            "condition_type": "networking:iprange",
+            "range": "10.100.0.0/16"
+          }
+        ]
+      },
+      "fallback": false
+    }
+  ]
+}
