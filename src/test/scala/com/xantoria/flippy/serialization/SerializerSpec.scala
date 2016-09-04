@@ -245,6 +245,25 @@ class SerializerSpec extends BaseSpec {
     actual should be (expected)
   }
 
+  "Proportion serializer" should "deserialize correctly" in {
+    val data = """
+      {
+        "condition_type": "proportion",
+        "proportion": 0.2274
+      }
+    """
+    val extracted = parse(data).extract[Condition]
+    extracted shouldBe a [Condition.Proportion]
+    extracted.asInstanceOf[Condition.Proportion].prop should be (0.2274)
+  }
+  it should "serialize correctly" in {
+    val c = Condition.Proportion(0.1143)
+    val expected = """{"condition_type":"proportion","proportion":0.1143}"""
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
+  }
+
   "Complex serialization conditions" should "work" in {
     // A nice complicated condition: this should match anyone named "Cloud" or who is
     // 17 years old, but only if they come from the Final Fantasy game franchise.

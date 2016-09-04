@@ -45,6 +45,7 @@ object SerializationEngine {
     ConditionSerializer.Equals,
     ConditionSerializer.Not,
     ConditionSerializer.Or,
+    ConditionSerializer.Proportion,
     ConditionSerializer.True,
     ConditionSerializer.False,
     NamespacedConditionSerializer,
@@ -151,6 +152,25 @@ object ConditionSerializer {
       JObject(List(
         typeField,
         JField("conditions", JArray(cond.subs map { Extraction.decompose(_) }))
+      ))
+    }
+  }
+
+  object Proportion extends ConditionSerializer[Condition.Proportion] {
+    override val typeName: String = "proportion"
+
+    def canSerialize(c: Condition) = c.isInstanceOf[Condition.Proportion]
+
+    def deserialize(data: JValue)(implicit formats: Formats): Condition.Proportion = {
+      val prop = (data \ "proportion").extract[Double]
+      Condition.Proportion(prop)
+    }
+
+    def serialize(c: Condition)(implicit formats: Formats): JValue = {
+      val cond = c.asInstanceOf[Condition.Proportion]
+      JObject(List(
+        typeField,
+        JField("proportion", JDouble(cond.prop))
       ))
     }
   }
