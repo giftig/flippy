@@ -101,4 +101,6 @@ class RedisBackend(
       }
     }
   }
+
+  // TODO: Define a more efficient listActive implementation using batched MGET calls
 }

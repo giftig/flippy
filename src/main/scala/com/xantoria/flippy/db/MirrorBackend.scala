@@ -102,4 +102,6 @@ class MirrorBackend(
    * Ask the authoritative flippy server if a given switch is active with the provided context
    */
   override def isActiveSafe(switchName: String, data: Map[String, Any]): Future[Boolean] = ???
+
+  // TODO: Implement a more efficient listActive method calling the correct remote endpoint
 }

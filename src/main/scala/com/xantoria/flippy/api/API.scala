@@ -80,13 +80,24 @@ trait APIHandling extends HttpService with LiftJsonSupport {
     }
   }
 
-  def handleSwitchListing = path("switch" ~ Slash.?) {
-    get {
-      parameters("offset".as[Option[Int]]) {
-        offset => onSuccess(backend.listSwitches(offset = offset, limit = Some(10))) {
-          data => complete(
-            200 -> data.map { s => SwitchConfig(s._1, s._2) }
-          )
+  def handleSwitchListing = {
+    path("switch" ~ Slash.?) {
+      get {
+        parameters("offset".as[Option[Int]]) {
+          offset => onSuccess(backend.listSwitches(offset = offset, limit = Some(10))) {
+            data => complete(
+              200 -> data.map { s => SwitchConfig(s._1, s._2) }
+            )
+          }
+        }
+      }
+    } ~
+    path("switches" / "active" ~ Slash.?) {
+      post {
+        entity(as[Map[String, ContextValue]]) {
+          data => onSuccess(backend.listActive(data mapValues { _.underlying })) {
+            activeSwitches => complete(200 -> activeSwitches)
+          }
         }
       }
     }

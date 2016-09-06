@@ -40,4 +40,23 @@ abstract class Backend {
       case t: Throwable => false
     }
   }
+
+  /**
+   * Find a list of switches which are true for the given context
+   *
+   * The default implementation is to just hit listSwitches and run them over isActive, but for
+   * most backends that's going to be inefficient, so this method will usually be overridden.
+   */
+  def listActive(data: Map[String, Any]): Future[List[String]] = listSwitches(
+    offset = None, limit = None
+  ) flatMap {
+    switches: List[(String, Condition)] => Future.sequence {
+      switches.map {
+        switch: (String, Condition) => isActive(switch._1, data) map {
+          case true => Some(switch._1)
+          case false => None
+        }
+      }
+    } map { _.flatten }
+  }
 }
