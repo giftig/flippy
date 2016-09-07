@@ -6,6 +6,7 @@ import scala.util.control.NonFatal
 
 import akka.actor.Actor
 import net.liftweb.json._
+import org.slf4j.{Logger, LoggerFactory}
 import spray.httpx.LiftJsonSupport
 import spray.routing.{ExceptionHandler, HttpService}
 
@@ -38,9 +39,13 @@ object ErrorMessage {
 trait APIHandling extends HttpService with LiftJsonSupport {
   protected val backend: Backend
   protected implicit val ec: ExecutionContext
+  private val logger = LoggerFactory.getLogger(classOf[APIHandling])
 
   protected implicit def exceptionHandler = ExceptionHandler {
-    case NonFatal(e) => complete(500 -> ErrorMessage(e))
+    case NonFatal(e) => complete {
+      logger.error("Unexpected exception", e)
+      500 -> ErrorMessage(e)
+    }
   }
 
   def handleSwitch = pathPrefix("switch" / Segment) {
@@ -49,7 +54,10 @@ trait APIHandling extends HttpService with LiftJsonSupport {
         post {
           entity(as[Condition]) {
             cond => onSuccess(backend.configureSwitch(switchName, cond)) {
-              _ => complete(200 -> InfoMessage())
+              _ => complete {
+                logger.info(s"Switch $switchName (re)configured")
+                200 -> InfoMessage()
+              }
             }
           }
         } ~
@@ -58,13 +66,19 @@ trait APIHandling extends HttpService with LiftJsonSupport {
             cond: Option[Condition] => cond map {
               c: Condition => complete(200 -> c)
             } getOrElse {
-              complete(404 -> InfoMessage(success = false, reason = Some("Switch not found")))
+              complete {
+                logger.warn(s"Attempt to check config for non-existent switch $switchName")
+                404 -> InfoMessage(success = false, reason = Some("Switch not found"))
+              }
             }
           }
         } ~
         delete {
           onSuccess(backend.deleteSwitch(switchName)) {
-            _ => complete(200 -> InfoMessage())
+            _ => complete {
+              logger.info(s"Switch $switchName deleted")
+              200 -> InfoMessage()
+            }
           }
         }
       } ~
@@ -72,7 +86,12 @@ trait APIHandling extends HttpService with LiftJsonSupport {
         post {
           entity(as[Map[String, ContextValue]]) {
             data => onSuccess(backend.isActiveSafe(switchName, data mapValues { _.underlying })) {
-              b => complete(200 -> IsActive(b))
+              b => complete {
+                logger.info(
+                  s"is_active called on $switchName; ${if(b) "" else "not "}active for context"
+                )
+                200 -> IsActive(b)
+              }
             }
           }
         }
@@ -85,9 +104,10 @@ trait APIHandling extends HttpService with LiftJsonSupport {
       get {
         parameters("offset".as[Option[Int]]) {
           offset => onSuccess(backend.listSwitches(offset = offset, limit = Some(10))) {
-            data => complete(
+            data => complete {
+              logger.info(s"Listing requested from ${offset getOrElse 0}; ${data.length} returned")
               200 -> data.map { s => SwitchConfig(s._1, s._2) }
-            )
+            }
           }
         }
       }
@@ -96,7 +116,10 @@ trait APIHandling extends HttpService with LiftJsonSupport {
       post {
         entity(as[Map[String, ContextValue]]) {
           data => onSuccess(backend.listActive(data mapValues { _.underlying })) {
-            activeSwitches => complete(200 -> activeSwitches)
+            activeSwitches => complete {
+              logger.info(s"Active switch list requested: ${activeSwitches.length} found")
+              200 -> activeSwitches
+            }
           }
         }
       }
