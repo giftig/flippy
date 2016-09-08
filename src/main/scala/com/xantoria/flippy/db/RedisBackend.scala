@@ -6,6 +6,7 @@ import scala.concurrent.Future
 import com.redis.RedisClient
 import net.liftweb.json.{Formats, parse => parseJson}
 import net.liftweb.json.Serialization.{write => writeJson}
+import org.slf4j.LoggerFactory
 
 import com.xantoria.flippy.condition.Condition
 
@@ -18,7 +19,9 @@ class RedisBackend(
   implicit val formats: Formats
 ) extends Backend {
   private final val ALLOWED_SWITCH_PATTERN = """^[\w-_]{1,64}$""".r
+  private val logger = LoggerFactory.getLogger(classOf[RedisBackend])
 
+  logger.info(s"Using redis backend at $host:$port")
   private def client = new RedisClient(host, port)
 
   /**
@@ -26,7 +29,10 @@ class RedisBackend(
    */
   private def validateName(s: String): Unit = s match {
     case ALLOWED_SWITCH_PATTERN() => ()
-    case _ => throw new IllegalArgumentException(s"The switch name '$s' is not acceptable")
+    case _ => {
+      logger.warn(s"Rejected switch name $s")
+      throw new IllegalArgumentException(s"The switch name '$s' is not acceptable")
+    }
   }
 
   /**
@@ -35,6 +41,7 @@ class RedisBackend(
    * This is a convenience util to allow collecting multiple configs with one client if desired
    */
   def _switchConfig(name: String, c: RedisClient): Future[Option[Condition]] = Future {
+    logger.info(s"Getting config for switch $name")
     validateName(name)
 
     c.get(s"$namespace:$name") map {
@@ -43,10 +50,12 @@ class RedisBackend(
   }
 
   def deleteSwitch(name: String): Future[Unit] = Future {
+    logger.info(s"Deleting switch $name")
     client.del(s"$namespace:$name")
   }
 
   def configureSwitch(name: String, condition: Condition): Future[Unit] = Future {
+    logger.info(s"Setting config for switch $name")
     validateName(name)
 
     val data = writeJson(condition)
@@ -61,6 +70,7 @@ class RedisBackend(
    * built on top of the backend if desired (especially with large numbers of switches)
    */
   def listSwitches(offset: Option[Int], limit: Option[Int]): Future[List[(String, Condition)]] = {
+    logger.info("Scanning redis for switches")
     val c = client
 
     def fetchKeys(cursor: Int = 0, acc: List[String] = Nil): Future[List[String]] = {

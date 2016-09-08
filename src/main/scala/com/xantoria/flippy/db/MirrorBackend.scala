@@ -4,6 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import akka.actor.ActorSystem
 import net.liftweb.json._
+import org.slf4j.LoggerFactory
 import spray.client.pipelining._
 import spray.http._
 import spray.httpx.LiftJsonSupport
@@ -36,6 +37,9 @@ class MirrorBackend(
   protected implicit val ec: ExecutionContext = actorSystem.dispatcher
   implicit def liftJsonFormats: Formats = formats
 
+  private val logger = LoggerFactory.getLogger(classOf[MirrorBackend])
+  logger.info(s"Using mirror backend at $scheme://$authority")
+
   /**
    * Pipelining step to unmarshal a config request directly into an Option[Condition]
    *
@@ -66,26 +70,30 @@ class MirrorBackend(
    * Unsupported; MirrorBackend is read-only
    */
   def deleteSwitch(name: String): Future[Unit] = Future {
+    logger.warn(s"Attempted to delete switch $name on flippy slave")
     throw new UnsupportedOperationException("The mirror backend is read-only")
   }
   /**
    * Unsupported; MirrorBackend is read-only
    */
   def configureSwitch(name: String, condition: Condition): Future[Unit] = Future {
+    logger.warn(s"Attempted to reconfigure switch $name on flippy slave")
     throw new UnsupportedOperationException("The mirror backend is read-only")
   }
 
   /**
    * Retrieve a switch's config from the authoritative flippy server
    */
-  def switchConfig(name: String): Future[Option[Condition]] = configPipeline {
-    Get(baseUrl.withPath(Uri.Path(s"/switch/$name/")))
+  def switchConfig(name: String): Future[Option[Condition]] = {
+    logger.info(s"Fetching state of switch $name from master node")
+    configPipeline { Get(baseUrl.withPath(Uri.Path(s"/switch/$name/"))) }
   }
 
   /**
    * Retrieve a list of switches available on the authoritative flippy server
    */
   def listSwitches(offset: Option[Int], limit: Option[Int]): Future[List[(String, Condition)]] = {
+    logger.info("Listing switches on master node")
     val params = {
       offset.map { "offset" -> _.toString } ++
       limit.map { "limit" -> _.toString }
@@ -101,6 +109,7 @@ class MirrorBackend(
   /**
    * Ask the authoritative flippy server if a given switch is active with the provided context
    */
+  // FIXME: Implement
   override def isActiveSafe(switchName: String, data: Map[String, Any]): Future[Boolean] = ???
 
   // TODO: Implement a more efficient listActive method calling the correct remote endpoint
