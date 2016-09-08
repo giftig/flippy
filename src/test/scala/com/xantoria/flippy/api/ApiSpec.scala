@@ -53,6 +53,8 @@ class TestBackend extends Backend {
   override def listSwitches(
     offset: Option[Int], limit: Option[Int]
   ): Future[List[(String, Condition)]] = ???
+
+  override def listActive(data: Map[String, Any]): Future[List[String]] = Future(Nil)
 }
 
 class ApiSpec extends BaseSpec with ScalatestRouteTest with APIHandling {
@@ -111,6 +113,16 @@ class ApiSpec extends BaseSpec with ScalatestRouteTest with APIHandling {
     ) ~> sealRoute(flippyRoutes) ~> check {
       val resp = responseAs[IsActive]
       resp.result should be (true)
+    }
+  }
+
+  "The list active endpoint" should "tell us the list of active switches for a context" in {
+    Post(
+      "/switches/active/",
+      Map("name" -> "Tifa")
+    ) ~> sealRoute(flippyRoutes) ~> check {
+      val resp = responseAs[List[String]]
+      resp should be (Nil)
     }
   }
 }
