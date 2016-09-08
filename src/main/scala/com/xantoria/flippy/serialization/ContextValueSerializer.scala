@@ -1,6 +1,6 @@
 package com.xantoria.flippy.serialization
 
-import net.liftweb.json.{Formats, MappingException, Serializer, TypeInfo}
+import net.liftweb.json.{Extraction, Formats, MappingException, Serializer, TypeInfo}
 import net.liftweb.json.JsonAST._
 
 /**
@@ -28,6 +28,10 @@ class ContextValueSerializer extends Serializer[ContextValue] {
         case v: JInt => v.extract[Int]
         case v: JDouble => v.extract[Double]
         case v: JBool => v.extract[Boolean]
+        case v: JArray => v.arr.map { _.extract[ContextValue].underlying }
+        case v: JObject => v.obj.map {
+          f => f.name -> f.value.extract[ContextValue].underlying
+        }.toMap
         case JNull | JNothing => null
         case _ => throw new MappingException("Unable to interpret type provided")
       }
@@ -40,6 +44,10 @@ class ContextValueSerializer extends Serializer[ContextValue] {
       case v: Int => JInt(v)
       case v: Double => JDouble(v)
       case v: Boolean => JBool(v)
+      case v: List[Any] => JArray(v map Extraction.decompose)
+      case v: Map[String, Any] => JObject(v.map {
+        case (name, value) => JField(name, Extraction.decompose(new ContextValue(value)))
+      }.toList)
       case None | null => JNull
       case v => JString(v.toString)
     }
