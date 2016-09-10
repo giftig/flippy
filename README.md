@@ -1,7 +1,8 @@
 # Flippy
 
-Easy feature switching for scala applications. Can also be run as a standalone service with
-a RESTful HTTP interface.
+Easy feature switching with arbitrary switches and conditions. Can be run either as a standalone
+application ([giftig/flippy-standalone](https://www.github.com/giftig/flippy-standalone)) with
+an HTTP JSON API, or as a library for scala applications.
 
 ## Switch conditions
 
@@ -105,7 +106,8 @@ set the ```DOCKER_URL``` env var.
 
 ## Development setup
 See the [giftig/flippy-tester](https://www.github.com/giftig/flippy-tester/) project for a
-ready-to-go dev environment for this project.
+ready-to-go dev environment for this project using flippy-standalone and nginx to serve the
+admin site.
 
 ## Management interface
 
