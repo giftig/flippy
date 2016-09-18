@@ -13,7 +13,8 @@ import com.xantoria.flippy.condition.Condition
 class RedisBackend(
   host: String,
   port: Int,
-  namespace: String
+  namespace: String,
+  batchRetrievalSize: Int = 50
 )(
   implicit val ec: ExecutionContext,
   implicit val formats: Formats
@@ -40,7 +41,7 @@ class RedisBackend(
    *
    * This is a convenience util to allow collecting multiple configs with one client if desired
    */
-  def _switchConfig(name: String, c: RedisClient): Future[Option[Condition]] = Future {
+  private def _switchConfig(name: String, c: RedisClient): Future[Option[Condition]] = Future {
     logger.info(s"Getting config for switch $name")
     validateName(name)
 
@@ -48,6 +49,31 @@ class RedisBackend(
       parseJson(_).extract[Condition]
     }
   }
+
+  /**
+   * Get a whole batch of switch configs with a single redis MGET call
+   */
+  private def switchConfigs(names: String*)(c: RedisClient): Future[
+    List[Option[Condition]]
+  ] = Future {
+    logger.info(s"Getting config for a batch of ${names.length} switches")
+
+    val keys = names.map { name => s"$namespace:$name" }
+
+    keys match {
+      case head :: tail => c.mget(head, tail: _*) map {
+        results: List[Option[String]] => {
+          results map {
+            _.map {
+              parseJson(_).extract[Condition]
+            }
+          }
+        }
+      } getOrElse Nil
+      case _ => Nil
+    }
+  }
+
 
   def deleteSwitch(name: String): Future[Unit] = Future {
     logger.info(s"Deleting switch $name")
@@ -100,16 +126,21 @@ class RedisBackend(
 
     val from = offset getOrElse 0
     val to = limit map { _ + from }
-    val keys: Future[List[String]] = fetchKeys() map {
+    val switches: Future[List[String]] = fetchKeys() map {
       k: List[String] => k.sorted.slice(from, to getOrElse k.length)
     }
 
     // TODO: Use a dedicated future pool for the Future.traverse here
-    // TODO: Define a more efficient listActive implementation using batched MGET calls
-    keys flatMap {
-      keys: List[String] => Future.traverse(keys) {
-        k: String => _switchConfig(k, client) map { conf: Option[Condition] => (k, conf.get) }
-      }
+    switches flatMap {
+      keys: List[String] => Future.traverse(keys.grouped(batchRetrievalSize).toList) {
+        batch: List[String] => switchConfigs(batch: _*)(client) map {
+          results => (batch zip results) collect {
+            // Prevents a None.get in case of race conditions, but a None shouldn't
+            // generally exist for the result
+            case (name, result) if result.isDefined => (name, result.get)
+          }
+        }
+      }.map { _.flatten }
     }
   }
 
