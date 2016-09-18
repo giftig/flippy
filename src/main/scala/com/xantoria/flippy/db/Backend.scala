@@ -49,14 +49,10 @@ abstract class Backend {
    */
   def listActive(data: Map[String, Any]): Future[List[String]] = listSwitches(
     offset = None, limit = None
-  ) flatMap {
-    switches: List[(String, Condition)] => Future.sequence {
-      switches.map {
-        switch: (String, Condition) => isActive(switch._1, data) map {
-          case true => Some(switch._1)
-          case false => None
-        }
-      }
-    } map { _.flatten }
+  ) map {
+    _.map {
+      case (name: String, cond: Condition) if cond.appliesTo(data) => Some(name)
+      case _ => None
+    }.flatten
   }
 }

@@ -105,6 +105,7 @@ class RedisBackend(
     }
 
     // TODO: Use a dedicated future pool for the Future.traverse here
+    // TODO: Define a more efficient listActive implementation using batched MGET calls
     keys flatMap {
       keys: List[String] => Future.traverse(keys) {
         k: String => _switchConfig(k, client) map { conf: Option[Condition] => (k, conf.get) }
@@ -112,5 +113,4 @@ class RedisBackend(
     }
   }
 
-  // TODO: Define a more efficient listActive implementation using batched MGET calls
 }
