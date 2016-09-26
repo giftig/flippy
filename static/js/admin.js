@@ -85,13 +85,13 @@
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg namespaced');
       var $field = $('<input>').attr('name', 'field');
+      var $conditions = subConditions.asOptions('Select condition').attr('name', 'condition');
       var $fallback = $('<select>').attr('name', 'fallback').addClass('fallback').append(
         $('<option>').val('').text('Select fallback'),
         $('<option>').val('true').text('true'),
         $('<option>').val('false').text('false')
       );
 
-      var $conditions = subConditions.asOptions('Select condition').attr('name', 'condition');
 
       $conditions.on('change', function() {
         var condName = $(this).val();
@@ -114,7 +114,7 @@
         }
       });
 
-      $form.html($field).append($fallback).append($conditions);
+      $form.html($field).append($conditions).append($fallback);
 
       $form.addSubmit = function($submit) {
         $conditions.after($submit);
@@ -698,7 +698,7 @@
     // Render the controls for new switches etc.
     self.renderControls = function() {
       // HEADER CONTROLS
-      var $newSwitch = $('<button>').addClass('new-switch').text('New switch');
+      var $newSwitch = $('<button>').addClass('new-switch').text('Create switch');
       var $newSwitchControls = $('<span>').addClass('new-switch-controls').addClass('extended');
       var $nameBox = $('<input>').addClass('name').val('new_switch');
       var $confirmButton = $('<button>').addClass('confirm').text('Create');

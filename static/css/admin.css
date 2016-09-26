@@ -1,12 +1,30 @@
 body {
+  background-color: #f9ffff;
   font-family: Verdana, Tahoma, Arial, sans-serif;
+  padding: 0;
+  margin: 0;
 }
 
+input:not([type]) {
+  background: none;
+}
+
+header {
+  background-color: #90d0d0;
+  color: #000090;
+
+  text-align: center;
+
+  padding: 40px 0;
+  width: 100%;
+}
 h1 {
-  color: purple;
+  margin: 0;
+  font-size: 1.6em;
 }
 
 #flippy-switches {
+  margin: 20px 40px;
   max-width: 800px;
 }
 
@@ -18,12 +36,13 @@ h1 {
 }
 
 #flippy-switches .switch .name {
-  vertical-align: middle;
-  display: inline-block;
+  display: block;
   width: 250px;
-  margin-bottom: 10px;
 
-  color: purple;
+  margin-bottom: 10px;
+  vertical-align: middle;
+
+  color: #000099;
   font-size: 1.1em;
 }
 
@@ -82,19 +101,29 @@ h1 {
 }
 
 #flippy-switches .persist {
-  display: inline-block;
+  display: block;
+  margin-top: 10px;
 }
 #flippy-switches button {
   background: none;
   border-style: solid;
 }
+
+#flippy-switches button.new-switch {
+  background: #90d0d0;
+  border-radius: 20px;
+  border: none;
+  color: #000090;
+  font-weight: bold;
+  padding: 5px 10px;
+}
+
 #flippy-switches .persist button:not(:last-child) {
   margin-right: 10px;
 }
 #flippy-switches button.save,
 #flippy-switches input[type="submit"].save,
-#flippy-switches button.confirm,
-#flippy-switches .controls button.new-switch {
+#flippy-switches button.confirm {
   border-color: #090;
   border-style: solid;
   color: #090;
@@ -173,7 +202,6 @@ h1 {
 #flippy-switches .condition-cfg input:not([type]) {
   color: inherit;
   border: none;
-  background: none;
 
   border-bottom: 1px solid;
   padding-left: 10px;
@@ -185,5 +213,9 @@ h1 {
   margin-right: 20px;
 }
 #flippy-switches .condition-cfg .fallback {
-  max-width: 80px;
+  max-width: 160px;
+}
+
+#flippy-switches .main-condition-selector {
+  margin-bottom: 10px;
 }
