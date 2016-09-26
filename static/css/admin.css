@@ -116,6 +116,7 @@ h1 {
   color: #000090;
   font-weight: bold;
   padding: 5px 10px;
+  cursor: pointer;
 }
 
 #flippy-switches .persist button:not(:last-child) {
