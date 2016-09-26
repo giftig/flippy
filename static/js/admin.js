@@ -33,7 +33,7 @@
 
   // Convenience function for generating option lists from available conditions
   var generateConditionList = function(conditions, defaultLabel) {
-    defaultLabel = defaultLabel || 'Select condition';
+    defaultLabel = defaultLabel || 'Change condition';
 
     var $conditions = $('<select>');
     $conditions.append($('<option>').val('').text(defaultLabel));
@@ -495,15 +495,50 @@
   // Controls for building a switch
   var SwitchBuilder = function(initial, admin) {
     var self = this;
+    var MODE_GUI = 0, MODE_ADVANCED = 1;
+
     initial = initial || {};
     self.name = initial.name || 'New switch';
     self.condition = initial.condition || {switch_type: 'false'};
     self.initialCondition = self.condition;
     self.admin = admin;
+    self.mode = MODE_GUI;
 
     self.baseUrl = self.admin.baseUrl;
     self.displayError = self.admin.displayError;
     self.displaySuccess = self.admin.displaySuccess;
+
+    self.save = function() {
+      var $conf = self.$controls.find('.config');
+      var $save = $conf.find('[data-action="save"]');
+      $save.attr('disabled', true);
+
+      // Update the JSON in the textarea from the GUI components
+      if (self.mode === MODE_GUI && self.widget) {
+        if (!self.widget.clean()) {
+          // TODO: Report an error here
+          return;
+        }
+        $conf.text(JSON.stringify(self.widget.buildJSON(), null, 2));
+      }
+
+      var data = $conf.val();
+
+      var success = function() {
+        $save.attr('disabled', false);
+        $conf.text(data);
+        $conf.val(data);
+
+        self.displaySuccess(
+          'Switch <span class="switch-name">' + self.name + '</span> successfully updated.',
+          'Switch saved'
+        );
+      };
+      var err = function() {
+        $save.attr('disabled', false);
+      };
+      self.updateSwitch(data, success, err);
+    };
 
     self.render = function() {
       // TODO: This needs to be aware of various types of switches and allow
@@ -521,27 +556,7 @@
         .text('Save')
         .addClass('save')
         .attr('data-action', 'save')
-        .click(function() {
-          var $save = $(this);
-          var $conf = $save.parents('.switch').find('.config');
-          $save.attr('disabled', true);
-          var data = $conf.val();
-
-          var success = function() {
-            $save.attr('disabled', false);
-            $conf.text(data);
-            $conf.val(data);
-
-            self.displaySuccess(
-              'Switch <span class="switch-name">' + self.name + '</span> successfully updated.',
-              'Switch saved'
-            );
-          };
-          var err = function() {
-            $save.attr('disabled', false);
-          };
-          self.updateSwitch(data, success, err);
-        });
+        .click(self.save);
 
       var $cancelButton = $('<button>').text('Cancel').addClass('cancel');
       $cancelButton.click(function() {
@@ -578,23 +593,8 @@
           return;
         }
 
-        var cond = new ConditionWidgets[type]();
-        var $condForm = data ? cond.init(data) : cond.renderForm();
-        var $submit = $('<input>').attr('type', 'submit').addClass('save').val('Update JSON');
-
-        // Some widgets will annotate an addSubmit onto the form if it doesn't belong at the end
-        $condForm[$condForm.addSubmit ? 'addSubmit' : 'append']($submit);
-
-        $condForm.on('submit', function(e) {
-          e.preventDefault();
-
-          if (!cond.clean()) {
-            return false;
-          }
-          $underlying.text(JSON.stringify(cond.buildJSON(), null, 2));
-          return false;
-        });
-
+        self.widget = new ConditionWidgets[type]();
+        var $condForm = data ? self.widget.init(data) : self.widget.renderForm();
         $stage.html($condForm);
       };
 
