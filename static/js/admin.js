@@ -8,7 +8,7 @@
   var conditionAliases = {
     ip_range: 'IPv4 range',
     multiple: 'and/or',
-    namespaced: 'field selection',
+    namespaced: 'field must match...',
   };
 
   // Map of official serialisation names to internal class names
