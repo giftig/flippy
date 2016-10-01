@@ -6,6 +6,7 @@
 
   // Pretty names. Default to the same name if not present in this mapping
   var conditionAliases = {
+    one_of: 'one of',
     ip_range: 'IPv4 range',
     multiple: 'and/or',
     namespaced: 'field must match...',
@@ -18,7 +19,8 @@
     'networking:iprange': 'ip_range',
     or: 'multiple',
     'string:regex': 'regex',
-    'substring:regex': 'substring',
+    'string:oneof': 'one_of',
+    'string:substring': 'substring',
     'true': 'on'
   };
 
@@ -29,7 +31,16 @@
   };
 
   var baseConditions = ['namespaced', 'multiple', 'not', 'on', 'off'];
-  var subConditions = ['equals', 'namespaced', 'multiple', 'not', 'regex', 'substring', 'ip_range'];
+  var subConditions = [
+    'equals',
+    'namespaced',
+    'multiple',
+    'not',
+    'regex',
+    'substring',
+    'one_of',
+    'ip_range'
+  ];
 
   // Convenience function for generating option lists from available conditions
   var generateConditionList = function(conditions, defaultLabel) {
@@ -458,6 +469,92 @@
     };
     self.buildJSON = function() {
       return {condition_type: 'string:regex', pattern: self.pattern};
+    };
+  };
+
+  ConditionWidgets.one_of = function() {
+    var self = this;
+    self.options = [];
+
+    var handleFields = function(removeEmpty) {
+      var $values = self.$values.children('.value');
+
+      for (var i = 0; i < $values.length; i++) {
+        var $val = $($values[i]);
+        if (removeEmpty && !$val.val() && i !== $values.length - 1) {
+          $val.remove();
+        }
+      }
+
+      // Refresh $values as removing elements doesn't change the stored value
+      $values = self.$values.children('.value');
+      if ($values.length === 0 || $values.last().val()) {
+        addValue(null);
+      }
+
+      // One more refresh
+      $values = self.$values.children('.value');
+
+      $values.off('blur').off('keyup');
+      $values.on({
+        blur: onBlur,
+        keyup: onKeyPress
+      });
+    };
+
+    var onKeyPress = function() {
+      handleFields(false);
+    };
+    var onBlur = function() {
+      handleFields(true);
+    };
+
+    var addValue = function(initialValue) {
+      self.$values.append(
+        $('<input>').addClass('value').val(initialValue)
+      );
+    };
+
+    self.init = function(data) {
+      self.renderForm();
+      for (var i = 0; i < data.options.length; i++) {
+        addValue(data.options[i]);
+      }
+      handleFields(true);
+
+      return self.$form;
+    };
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg oneof');
+      var $values = $('<div>').addClass('value-list');
+
+      $form.html($values);
+      $values.before('...must be one of ');
+
+      self.$form = $form;
+      self.$values = $values;
+
+      addValue();
+      return $form;
+    };
+
+    self.clean = function() {
+      var options = [];
+      self.$values.children('.value').each(function() {
+        var v = $(this).val();
+
+        if (v) {
+          options.push(v);
+        }
+      });
+      self.options = options.sort();
+
+      return self.options.length !== 0;
+    };
+
+    self.buildJSON = function() {
+      return {condition_type: 'string:oneof', options: self.options};
     };
   };
 

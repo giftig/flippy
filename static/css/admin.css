@@ -161,7 +161,8 @@ h1 {
   color: #999;
   background-color: #fff;
 }
-#flippy-switches .condition-cfg.equals {
+#flippy-switches .condition-cfg.equals,
+#flippy-switches .condition-cfg.oneof {
   border-color: #009;
   color: #009;
   background-color: #eef;
@@ -219,4 +220,8 @@ h1 {
 
 #flippy-switches .main-condition-selector {
   margin-bottom: 10px;
+}
+
+#flippy-switches .condition-cfg.oneof .value-list .value {
+  margin: 0 10px 0 0;
 }
