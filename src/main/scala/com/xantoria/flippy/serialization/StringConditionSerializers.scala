@@ -73,4 +73,30 @@ object StringConditionSerializers {
       new StringConditions.Substring(value)
     }
   }
+
+  object OneOf extends ConditionSerializer[StringConditions.OneOf] {
+    override val typeName: String = "string:oneof"
+
+    def canSerialize(c: Condition) = c.isInstanceOf[StringConditions.OneOf]
+
+    def serialize(condition: Condition)(implicit formats: Formats): JValue = {
+      val cond = condition.asInstanceOf[StringConditions.OneOf]
+      JObject(List(
+        typeField,
+        JField("options", JArray(cond.options map JString.apply))
+      ))
+    }
+
+    def deserialize(data: JValue)(implicit formats: Formats): StringConditions.OneOf = {
+      val options = (data \ "options").extractOpt[List[JValue]] map {
+        _.map { _.extract[String] }
+      } getOrElse {
+        throw new MalformedConditionDefinitionException(
+          "[String:OneOf] Missing 'options' attribute"
+        )
+      }
+
+      new StringConditions.OneOf(options)
+    }
+  }
 }

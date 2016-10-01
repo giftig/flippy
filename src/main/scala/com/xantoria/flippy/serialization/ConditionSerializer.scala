@@ -52,6 +52,7 @@ object SerializationEngine {
     StringConditionSerializers.Range,
     StringConditionSerializers.Regex,
     StringConditionSerializers.Substring,
+    StringConditionSerializers.OneOf,
     NetworkingSerializer.IPRange
   )
 

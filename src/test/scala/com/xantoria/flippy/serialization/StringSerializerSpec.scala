@@ -79,4 +79,29 @@ class StringSerializerSpec extends BaseSpec {
 
     actual should be (expected)
   }
+
+  "One-of serializer" should "deserialize correctly" in {
+    val data = """
+      {
+        "condition_type": "string:oneof",
+        "options": ["Cloud", "Tifa", "Yuffie", "Red XIII"]
+      }
+    """
+    val extracted = parse(data).extract[Condition]
+    extracted shouldBe a [StringConditions.OneOf]
+    extracted.appliesTo("Cloud") should be (true)
+    extracted.appliesTo("Tifa") should be (true)
+    extracted.appliesTo("Yuffie") should be (true)
+    extracted.appliesTo("Red XIII") should be (true)
+    extracted.appliesTo("Sephiroth") should be (false)
+  }
+
+  it should "serialize correctly" in {
+    val c = new StringConditions.OneOf(List("Potion", "Phoenix Down"))
+    val expected = """{"condition_type":"string:oneof","options":["Potion","Phoenix Down"]}"""
+    val actual = Serialization.write(c)
+
+    actual should be (expected)
+
+  }
 }

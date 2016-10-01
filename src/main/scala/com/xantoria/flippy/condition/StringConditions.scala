@@ -21,4 +21,8 @@ object StringConditions {
   class Substring(val sub: String) extends SCondition {
     override def appliesTo(s: String): Boolean = s.contains(sub)
   }
+
+  class OneOf(val options: List[String]) extends SCondition {
+    override def appliesTo(s: String): Boolean = options.contains(s)
+  }
 }

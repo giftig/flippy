@@ -51,6 +51,16 @@ class StringConditionsSpec extends BaseSpec {
     caps.appliesTo("ReGeX is Fun") should be (true)
   }
 
+  it should "allow matching one of a list of values" in {
+    val options = List("Cloud", "Tifa", "Red XVIII")
+    val cond = new OneOf(options)
+
+    options foreach {
+      cond.appliesTo(_) should be (true)
+    }
+    cond.appliesTo("Sephiroth") should be (false)
+  }
+
   it should "be false if given a non-string value" in {
     val cond = new Range(low = None, high = None)
     cond.appliesTo(12) should be (false)
