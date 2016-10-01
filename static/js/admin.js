@@ -515,6 +515,37 @@
       );
     };
 
+    // Open a popup asking them to dump CSV data for setting options
+    var openCsvPopup = function(cb) {
+      var $box = $('#modal-dialog');
+      $box.empty();
+
+      var $title = $('<h1>').text('Paste CSV data');
+      var $textarea = $('<textarea>').addClass('csv-selection');
+      var $submit = $('<button>').addClass('themed-button').attr('type', 'button').text(
+        'Submit'
+      );
+      var $cancel = $('<button>').addClass('themed-button').addClass('cancel').attr(
+        'type', 'button'
+      ).text('Cancel');
+
+      $submit.click(function() {
+        cb($textarea.val());
+        $box.hide();
+      });
+      $cancel.click(function() {
+        $box.hide();
+      });
+
+      var $controls = $('<div>').addClass('controls');
+      $controls.html($submit).append($cancel);
+
+      $box.html($title);
+      $box.append($textarea);
+      $box.append($controls);
+      $box.show();
+    };
+
     self.init = function(data) {
       self.renderForm();
       for (var i = 0; i < data.options.length; i++) {
@@ -528,9 +559,25 @@
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg oneof');
       var $values = $('<div>').addClass('value-list');
+      var $csvButton = $('<button>').text('Set CSV').addClass('themed-button');
+      $csvButton.attr('type', 'button');
+      $csvButton.click(function() {
+        openCsvPopup(function(data) {
+          var options = data.split(',').map(function(e) {
+            return e.replace(/^\s*(.+[^\s])\s*$/, '$1');  // trim strings
+          });
+
+          self.$values.empty();
+          for (var i = 0; i < options.length; i++) {
+            addValue(options[i]);
+          }
+          handleFields(true);
+        });
+      });
 
       $form.html($values);
       $values.before('...must be one of ');
+      $form.append($csvButton);
 
       self.$form = $form;
       self.$values = $values;
@@ -795,7 +842,9 @@
     // Render the controls for new switches etc.
     self.renderControls = function() {
       // HEADER CONTROLS
-      var $newSwitch = $('<button>').addClass('new-switch').text('Create switch');
+      var $newSwitch = $('<button>').addClass('new-switch').addClass('themed-button').text(
+        'Create switch'
+      );
       var $newSwitchControls = $('<span>').addClass('new-switch-controls').addClass('extended');
       var $nameBox = $('<input>').addClass('name').val('new_switch');
       var $confirmButton = $('<button>').addClass('confirm').text('Create');

@@ -104,12 +104,12 @@ h1 {
   display: block;
   margin-top: 10px;
 }
-#flippy-switches button {
+button {
   background: none;
   border-style: solid;
 }
 
-#flippy-switches button.new-switch {
+button.themed-button {
   background: #90d0d0;
   border-radius: 20px;
   border: none;
@@ -117,6 +117,9 @@ h1 {
   font-weight: bold;
   padding: 5px 10px;
   cursor: pointer;
+}
+button.themed-button.cancel {
+  background-color: #d0d0d0;
 }
 
 #flippy-switches .persist button:not(:last-child) {
@@ -224,4 +227,48 @@ h1 {
 
 #flippy-switches .condition-cfg.oneof .value-list .value {
   margin: 0 10px 0 0;
+}
+#flippy-switches .condition-cfg.oneof button {
+  margin-top: 10px;
+}
+
+#modal-dialog {
+  display: none;
+  position: absolute;
+  top: 200px;
+  left: 100px;
+  right: 100px;
+  z-index: 50;
+
+  padding: 20px;
+
+  background: #eee;
+  border: 2px solid #90d0d0;
+  border-radius: 20px;
+
+}
+
+#modal-dialog h1 {
+  font-size: 1.4em;
+  color: #000090;
+}
+
+#modal-dialog textarea {
+  display: block;
+  margin: 20px 0;
+  width: 100%;
+
+  height: 300px;
+}
+#modal-dialog .controls button:not(:first-child) {
+  margin-left: 20px
+}
+
+@media (max-width: 600px) {
+  #modal-dialog {
+    top: 10px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
 }
