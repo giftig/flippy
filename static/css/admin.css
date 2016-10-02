@@ -20,6 +20,8 @@ header {
   padding: 40px 0;
 }
 footer {
+  position: absolute;
+  bottom: 0;
   padding: 20px 0;
 }
 footer a {
