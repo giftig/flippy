@@ -583,6 +583,8 @@
       self.$values = $values;
 
       addValue();
+      handleFields(true);
+
       return $form;
     };
 
