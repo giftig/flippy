@@ -139,7 +139,20 @@
       self.field = self.$form.children('[name="field"]').val();
       self.fallback = self.$form.children('[name="fallback"]').val() === 'true';
 
-      return !!self.condition && self.condition.clean();
+      if (!self.field) {
+        self.error = 'No field specified for namespaced condition';
+        return false;
+      }
+      if (!self.condition) {
+        self.error = 'No condition selected for namespacing on field ' + self.field;
+        return false;
+      }
+      if(!self.condition.clean()) {
+        self.error = self.condition.error;
+        return false;
+      }
+
+      return true;
     };
 
     self.buildJSON = function() {
@@ -208,7 +221,15 @@
     };
 
     self.clean = function() {
-      return !!self.condition && self.condition.clean();
+      if (!self.condition) {
+        self.error = 'No condition selected on "NOT"';
+        return false;
+      }
+      if(!self.condition.clean()) {
+        self.error = self.condition.error;
+        return false;
+      }
+      return true;
     };
 
     self.buildJSON = function() {
@@ -384,14 +405,21 @@
 
     self.clean = function() {
       if (self.conditions.length === 0) {
+        self.error = 'No conditions selected for and/or';
         return false;
       }
       self.conditionType = self.$form.children('[name="type"]').val();
 
+      var errors = [];
+
       for (var i = 0; i < self.conditions.length; i++) {
         if (!self.conditions[i].clean()) {
-          return false;
+          errors.push(self.conditions[i].error);
         }
+      }
+
+      if (errors.length !== 0) {
+        self.error = errors.join('<br>');
       }
 
       return true;
@@ -597,7 +625,12 @@
       });
       self.options = options.sort();
 
-      return self.options.length !== 0;
+      if (self.options.length === 0) {
+        self.error = 'No options specified for "one of" field';
+        return false;
+      }
+
+      return true;
     };
 
     self.buildJSON = function() {
@@ -629,6 +662,7 @@
 
     self.clean = function() {
       self.range = self.$form.children('[name="range"]').val();
+      // TODO: Validate this with a regex
       return true;
     };
     self.buildJSON = function() {

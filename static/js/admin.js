@@ -26,7 +26,10 @@
       // Update the JSON in the textarea from the GUI components
       if (self.mode === MODE_GUI && self.widget) {
         if (!self.widget.clean()) {
-          // TODO: Report an error here
+          self.displayError(
+            self.widget.error || 'Unspecified validation failure',
+            'Form validation error'
+          );
           return;
         }
         $conf.text(JSON.stringify(self.widget.buildJSON(), null, 2));

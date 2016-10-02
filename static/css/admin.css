@@ -20,8 +20,6 @@ header {
   padding: 40px 0;
 }
 footer {
-  position: absolute;
-  bottom: 0;
   padding: 20px 0;
 }
 footer a {
@@ -34,7 +32,7 @@ h1 {
 }
 
 #flippy-switches {
-  margin: 20px 40px;
+  margin: 20px 40px 100px 40px;
   max-width: 800px;
 }
 
