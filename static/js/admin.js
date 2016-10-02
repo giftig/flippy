@@ -520,10 +520,11 @@
       var $box = $('#modal-dialog');
       $box.empty();
 
-      var $title = $('<h1>').text('Paste CSV data');
-      var $textarea = $('<textarea>').addClass('csv-selection');
+      var data = self.clean() ? self.options.join(',') : null;
+      var $title = $('<h1>').text('CSV data');
+      var $textarea = $('<textarea>').addClass('csv-selection').val(data);
       var $submit = $('<button>').addClass('themed-button').attr('type', 'button').text(
-        'Submit'
+        'Update'
       );
       var $cancel = $('<button>').addClass('themed-button').addClass('cancel').attr(
         'type', 'button'
@@ -559,7 +560,7 @@
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg oneof');
       var $values = $('<div>').addClass('value-list');
-      var $csvButton = $('<button>').text('Set CSV').addClass('themed-button');
+      var $csvButton = $('<button>').text('Edit as CSV').addClass('themed-button');
       $csvButton.attr('type', 'button');
       $csvButton.click(function() {
         openCsvPopup(function(data) {
