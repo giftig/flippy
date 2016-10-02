@@ -9,15 +9,23 @@ input:not([type]) {
   background: none;
 }
 
-header {
+header, footer {
   background-color: #90d0d0;
   color: #000090;
 
   text-align: center;
-
-  padding: 40px 0;
   width: 100%;
 }
+header {
+  padding: 40px 0;
+}
+footer {
+  padding: 20px 0;
+}
+footer a {
+  color: #000090;
+}
+
 h1 {
   margin: 0;
   font-size: 1.6em;
