@@ -200,8 +200,12 @@
         success: function(data) {
           self.renderSwitches(data);
         },
-        error: function(data) {
-          self.displayError(data);
+        error: function(xhr, textStatus, errorThrown) {
+          if (errorThrown) {
+            self.displayError('', xhr.status + ' ' + errorThrown);
+          } else {
+            self.displayError(textStatus, 'Unexpected error');
+          }
         },
         complete: cb
       });
