@@ -247,6 +247,10 @@ button.themed-button.cancel {
   margin-top: 10px;
 }
 
+#flippy-switches .spinner {
+  width: 60px;
+}
+
 #modal-dialog {
   display: none;
   position: absolute;

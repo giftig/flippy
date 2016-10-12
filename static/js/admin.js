@@ -1,5 +1,7 @@
 (function($, Conditions) {
   var DEFAULT_CONDITION = {condition_type: 'false'};
+  var SPINNER_ICON = '../img/spinner.svg';
+
   var $errorBox;
 
   // Controls for building a switch
@@ -194,6 +196,11 @@
     self.listSwitches = function(offset, cb) {
       offset = offset || 0;
 
+      // Show spinner after 1s
+      var timer = setTimeout(function() {
+        self.$spinner.show();
+      }, 1000);
+
       $.ajax({
         url: self.baseUrl + 'switch/?offset=' + offset,
         type: 'GET',
@@ -207,7 +214,11 @@
             self.displayError(textStatus, 'Unexpected error');
           }
         },
-        complete: cb
+        complete: function() {
+          clearTimeout(timer);
+          self.$spinner.hide();
+          (cb || function() {})();
+        }
       });
     };
 
@@ -288,10 +299,12 @@
       self.$container.empty();
       self.$headerControls = $('<div>').addClass('controls');
       self.$switchList = $('<div>').addClass('switches');
+      self.$spinner = $('<img>').attr('src', SPINNER_ICON).addClass('spinner');
       self.$footerControls = $('<div>').addClass('controls');
 
       self.$container.append(self.$headerControls);
-      self.$container.append(self.$switchList)
+      self.$container.append(self.$switchList);
+      self.$container.append(self.$spinner);
       self.$container.append(self.$footerControls);
 
       self.renderControls();
