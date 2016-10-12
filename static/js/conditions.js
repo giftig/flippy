@@ -7,6 +7,7 @@
     ip_range: 'IPv4 range',
     multiple: 'and/or',
     namespaced: 'field must match...',
+    proportion: 'percentage'
   };
 
   // Map of official serialisation names to internal class names
@@ -36,7 +37,8 @@
     'regex',
     'substring',
     'one_of',
-    'ip_range'
+    'ip_range',
+    'proportion'
   ];
 
   // Convenience function for generating option lists from available conditions
@@ -667,6 +669,46 @@
     };
     self.buildJSON = function() {
       return {condition_type: 'networking:iprange', range: self.range};
+    };
+  };
+
+  Widgets.proportion = function() {
+    var self = this;
+    self.prop = null;
+
+    self.init = function(data) {
+      self.renderForm();
+      self.$form.children('[name="prop"]').val(data.proportion * 100);
+      return self.$form;
+    };
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg proportion');
+      var $prop = $('<input>').attr('name', 'prop');
+      $form.html($prop);
+
+      $prop.before('...on for ');
+      $prop.after('% of values');
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      var prop = self.$form.children('[name="prop"]').val();
+
+      // Parse float still works with junk at the end of the string, which I don't like
+      if (!prop.match(/^[0-9]*\.?[0-9]+$/)) {
+        self.error = 'Non-numeric proportion given';
+        return false;
+      }
+
+      self.prop = parseFloat(prop / 100);
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return {condition_type: 'proportion', proportion: self.prop};
     };
   };
 

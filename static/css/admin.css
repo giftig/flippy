@@ -201,6 +201,13 @@ button.themed-button.cancel {
   color: #090;
   background-color: #efe;
 }
+
+#flippy-switches .condition-cfg.proportion {
+  border-color: #990;
+  color: #990;
+  background-color: #ffe;
+}
+
 #flippy-switches .condition-cfg.always-off {
   border-color: #900;
   color: #900;
