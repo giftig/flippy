@@ -54,17 +54,6 @@ h1 {
   font-size: 1.1em;
 }
 
-#flippy-switches .switch .config {
-  display: none;
-
-  color: blue;
-  border: none;
-  font-family: monospace;
-
-  width: 80%;
-  height: 400px;
-}
-
 .flippy-admin-message {
   border: 2px solid #eee;
   background-color: #eee;
