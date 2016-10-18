@@ -7,14 +7,12 @@
   // Controls for building a switch
   var SwitchBuilder = function(initial, admin) {
     var self = this;
-    var MODE_GUI = 0, MODE_ADVANCED = 1;
 
     initial = initial || {};
     self.name = initial.name || 'New switch';
     self.condition = initial.condition || {switch_type: 'false'};
     self.initialCondition = self.condition;
     self.admin = admin;
-    self.mode = MODE_GUI;
     self.deleted = false;
 
     self.baseUrl = self.admin.baseUrl;
@@ -26,16 +24,18 @@
         return false;
       }
 
-      if (self.mode === MODE_GUI && self.widget) {
-        if (!self.widget.clean()) {
-          return true;
-        }
-
-        return (
-          JSON.stringify(self.widget.buildJSON()) !==
-          JSON.stringify(self.condition)
-        );
+      if (!self.widget) {
+        return false;
       }
+
+      if (!self.widget.clean()) {
+        return true;
+      }
+
+      return (
+        JSON.stringify(self.widget.buildJSON()) !==
+        JSON.stringify(self.condition)
+      );
     };
 
     self.save = function() {
@@ -44,7 +44,7 @@
       $save.attr('disabled', true);
 
       // Update the JSON in the textarea from the GUI components
-      if (self.mode === MODE_GUI && self.widget) {
+      if (self.widget) {
         if (!self.widget.clean()) {
           self.displayError(
             self.widget.error || 'Unspecified validation failure',
