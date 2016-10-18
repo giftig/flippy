@@ -148,7 +148,7 @@
       $.ajax({
         url: self.baseUrl + 'switch/' + self.name + '/',
         type: 'POST',
-        data: JSON.stringify(self.condition),
+        data: JSON.stringify(condition),
         dataType: 'json',
         contentType: 'application/json',
         success: success,
