@@ -15,10 +15,28 @@
     self.initialCondition = self.condition;
     self.admin = admin;
     self.mode = MODE_GUI;
+    self.deleted = false;
 
     self.baseUrl = self.admin.baseUrl;
     self.displayError = self.admin.displayError;
     self.displaySuccess = self.admin.displaySuccess;
+
+    self.isUnsaved = function() {
+      if (self.deleted) {
+        return false;
+      }
+
+      if (self.mode === MODE_GUI && self.widget) {
+        if (!self.widget.clean()) {
+          return true;
+        }
+
+        return (
+          JSON.stringify(self.widget.buildJSON()) !==
+          JSON.stringify(self.condition)
+        );
+      }
+    };
 
     self.save = function() {
       var $conf = self.$controls.find('.config');
@@ -34,7 +52,8 @@
           );
           return;
         }
-        $conf.text(JSON.stringify(self.widget.buildJSON(), null, 2));
+        self.condition = self.widget.buildJSON();
+        $conf.text(JSON.stringify(self.condition, null, 2));
       }
 
       var data = $conf.val();
@@ -158,6 +177,7 @@
         url: self.baseUrl + 'switch/' + self.name + '/',
         type: 'DELETE',
         success: function() {
+          self.deleted = true;
           self.admin.switchDeleted(self.name);
         },
         error: function(resp) {
@@ -174,6 +194,8 @@
     self.host = cfg.host;
     self.port = cfg.port;
     self.pathPrefix = cfg.path_prefix || '/';
+    self.noConflict = !!cfg.no_conflict;
+    self.switches = [];
 
     self.$container = cfg.container;
 
@@ -192,6 +214,28 @@
     self.$msgBox.click(function() {
       $(this).hide();
     });
+
+    // If no_conflict is set we'll assume doing anything global will
+    // clash with something, so don't bind to window unload
+    if (!self.noConflict) {
+      window.onbeforeunload = function() {
+        var unsaved = self.getUnsavedSwitches();
+        if (unsaved.length === 0) {
+          return null;
+        }
+
+        return (
+          'Are you sure you want to leave? These switches have not been saved: ' +
+          unsaved.join(', ')
+        );
+      };
+    }
+
+    self.getUnsavedSwitches = function() {
+      return self.switches.filter(function(e) {
+        return e.isUnsaved();
+      });
+    };
 
     self.listSwitches = function(offset, cb) {
       offset = offset || 0;
@@ -224,7 +268,9 @@
 
     self.renderSwitches = function(switches) {
       for (var i = 0; i < switches.length; i++) {
-        self.$switchList.append(new SwitchBuilder(switches[i], self).render());
+        var s = new SwitchBuilder(switches[i], self);
+        self.switches.push(s);
+        self.$switchList.append(s.render());
       }
     };
 
@@ -243,6 +289,7 @@
         $newSwitchControls.show();
         $newSwitch.hide();
       });
+
       $confirmButton.click(function() {
         var name = $nameBox.val();
         $nameBox.val('new_switch');
@@ -255,6 +302,7 @@
         var newSwitch = new SwitchBuilder(
           {name: name, condition: DEFAULT_CONDITION}, self
         );
+        self.switches.push(newSwitch);
         self.$switchList.prepend(newSwitch.render());
         $newSwitchControls.hide();
         $newSwitch.show();
