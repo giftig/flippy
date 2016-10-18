@@ -7,7 +7,8 @@
     ip_range: 'IPv4 range',
     multiple: 'and/or',
     namespaced: 'field must match...',
-    proportion: 'percentage'
+    proportion: 'percentage',
+    raw: '(edit as JSON)'
   };
 
   // Map of official serialisation names to internal class names
@@ -24,11 +25,11 @@
 
   var createCondition = function(name) {
     var t = conditionTypes[name] || name;
-    var Condition = Widgets[t];
-    return Condition ? new Condition() : null;
+    var Condition = Widgets[t] || Widgets.raw;
+    return new Condition();
   };
 
-  var baseConditions = ['namespaced', 'multiple', 'not', 'on', 'off'];
+  var baseConditions = ['namespaced', 'multiple', 'not', 'on', 'off', 'raw'];
   var subConditions = [
     'equals',
     'namespaced',
@@ -38,7 +39,8 @@
     'substring',
     'one_of',
     'ip_range',
-    'proportion'
+    'proportion',
+    'raw'
   ];
 
   // Convenience function for generating option lists from available conditions
@@ -130,7 +132,7 @@
         $conditions.after($submit);
       };
 
-      // Labelling
+      // Labellingjs parse JSON
       $field.before('The field ');
       $field.after(' ... ');
       self.$form = $form;
@@ -710,6 +712,49 @@
     self.buildJSON = function() {
       return {condition_type: 'proportion', proportion: self.prop};
     };
+  };
+
+  /**
+   * This widget is special in that any condition type which doesn't have a defined widget
+   * will use this. It's just a text area containing the raw JSON.
+   */
+  Widgets.raw = function() {
+    var self = this;
+    self.data = {condition_type: "..."};
+
+    self.init = function(data) {
+      self.data = data;
+      self.renderForm();
+      return self.$form;
+    };
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg raw-json');
+      var $data = $('<textarea>').attr('name', 'data');
+      $data.val(JSON.stringify(self.data, null, 2));
+
+      $form.html($data);
+      $data.before('...raw or unknown condition config');
+
+      self.$form = $form;
+      return $form;
+    };
+
+    self.clean = function() {
+      try {
+        self.data = JSON.parse(self.$form.children('[name="data"]').val());
+      } catch(err) {
+        self.error = 'Unparseable JSON';
+        return false;
+      }
+
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return self.data;
+    };
+
   };
 
   // Exports

@@ -246,6 +246,18 @@ button.themed-button.cancel {
 #flippy-switches .condition-cfg.oneof button {
   margin-top: 10px;
 }
+#flippy-switches .condition-cfg.raw-json {
+  border-color: black;
+  color: black;
+  background-color: #f9ffff;
+}
+#flippy-switches .condition-cfg.raw-json textarea {
+  display: block;
+  width: 90%;
+  height: 300px;
+  font-family: monospace;
+  border: 1px solid black;
+}
 
 #flippy-switches .spinner {
   width: 60px;
