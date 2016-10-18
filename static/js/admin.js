@@ -39,29 +39,23 @@
     };
 
     self.save = function() {
-      var $conf = self.$controls.find('.config');
-      var $save = $conf.find('[data-action="save"]');
+      var $save = self.$controls.find('[data-action="save"]');
       $save.attr('disabled', true);
 
       // Update the JSON in the textarea from the GUI components
-      if (self.widget) {
-        if (!self.widget.clean()) {
-          self.displayError(
-            self.widget.error || 'Unspecified validation failure',
-            'Form validation error'
-          );
-          return;
-        }
-        self.condition = self.widget.buildJSON();
-        $conf.text(JSON.stringify(self.condition, null, 2));
+      if (!self.widget.clean()) {
+        self.displayError(
+          self.widget.error || 'Unspecified validation failure',
+          'Form validation error'
+        );
+        return;
       }
-
-      var data = $conf.val();
+      var condition = self.widget.buildJSON();
+      var data = JSON.stringify(condition);
 
       var success = function() {
         $save.attr('disabled', false);
-        $conf.text(data);
-        $conf.val(data);
+        self.condition = condition;
 
         self.displaySuccess(
           'Switch <span class="switch-name">' + self.name + '</span> successfully updated.',
@@ -79,11 +73,7 @@
       // modifying it with a nice GUI. For now, we'll edit raw JSON instead
       var $controls = $('<div>').addClass('switch').attr('data-name', self.name);
       $controls.append($('<span>').addClass('name').text(self.name));
-      var $underlyingData = $('<textarea>').addClass('config').text(
-        JSON.stringify(self.condition, null, '  ')
-      );
-      $controls.append($underlyingData);
-      $controls.append(self.renderGui(self.condition, $underlyingData));
+      $controls.append(self.renderGui(self.condition));
 
       var $persistControls = $('<div>').addClass('persist');
       var $saveButton = $('<button>')
@@ -94,10 +84,8 @@
 
       var $cancelButton = $('<button>').text('Cancel').addClass('cancel');
       $cancelButton.click(function() {
-        var $conf = $(this).parents('.switch').find('.config');
-        $conf.val($conf.text());
         $controls.find('.switch-builder').replaceWith(
-          self.renderGui(self.condition, $underlyingData)
+          self.renderGui(self.condition)
         );
       });
 
@@ -117,7 +105,7 @@
       return self.$controls;
     };
 
-    self.renderGui = function(initial, $underlying) {
+    self.renderGui = function(initial) {
       var $builder = $('<div>').addClass('switch-builder');
       var $select = Conditions.baseConditions.asOptions().addClass(
         'main-condition-selector'
