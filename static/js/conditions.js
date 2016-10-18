@@ -23,10 +23,21 @@
     'true': 'on'
   };
 
-  var createCondition = function(name) {
+  /**
+   * Create a named condition type, defaulting to raw if the type isn't
+   * understood. If the type is raw and we're replacing another widget,
+   * initialise the raw data with the JSON value of that widget.
+   */
+  var createCondition = function(name, replacing) {
     var t = conditionTypes[name] || name;
-    var Condition = Widgets[t] || Widgets.raw;
-    return new Condition();
+    t = Widgets[t] ? t : 'raw';
+    var Condition = Widgets[t];
+    var c = new Condition();
+
+    if (t === 'raw' && replacing && replacing.clean()) {
+      c.init(replacing.buildJSON());
+    }
+    return c;
   };
 
   var baseConditions = ['namespaced', 'multiple', 'not', 'on', 'off', 'raw'];
@@ -115,7 +126,7 @@
           return;
         }
 
-        var sub = createCondition(condName);
+        var sub = createCondition(condName, self.condition);
         self.condition = sub;
         var $subform = sub.renderForm().addClass('subcondition');
 
@@ -200,7 +211,7 @@
           return;
         }
 
-        var sub = createCondition(condName);
+        var sub = createCondition(condName, self.condition);
         self.condition = sub;
         var $subform = sub.renderForm().addClass('subcondition');
 

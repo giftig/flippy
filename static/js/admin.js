@@ -119,11 +119,7 @@
         }
 
         var previousWidget = self.widget;
-        self.widget = new Conditions.createCondition(type);
-
-        if (previousWidget && type === 'raw' && previousWidget.clean()) {
-          self.widget.init(previousWidget.buildJSON());
-        }
+        self.widget = new Conditions.createCondition(type, data ? null : self.widget);
 
         var $condForm = data ? self.widget.init(data) : self.widget.renderForm();
         $stage.html($condForm);
