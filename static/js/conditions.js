@@ -115,7 +115,7 @@
           return;
         }
 
-        var sub = new Widgets[condName]();
+        var sub = createCondition(condName);
         self.condition = sub;
         var $subform = sub.renderForm().addClass('subcondition');
 
@@ -200,7 +200,7 @@
           return;
         }
 
-        var sub = new Widgets[condName]();
+        var sub = createCondition(condName);
         self.condition = sub;
         var $subform = sub.renderForm().addClass('subcondition');
 
@@ -379,7 +379,7 @@
         if (!condType) {
           return;
         }
-        var cond = new Widgets[condType]();
+        var cond = createCondition(condType);
         cond.index = nextIndex++;
         self.conditions.push(cond);
 
@@ -764,6 +764,7 @@
   Conditions.baseConditions = baseConditions;
   Conditions.subConditions = subConditions;
   Conditions.conditionTypes = conditionTypes;
+  Conditions.createCondition = createCondition;
 
   window.Conditions = Conditions;
 })(jQuery);

@@ -48,14 +48,15 @@
           self.widget.error || 'Unspecified validation failure',
           'Form validation error'
         );
+        $save.attr('disabled', false);
         return;
       }
       var condition = self.widget.buildJSON();
-      var data = JSON.stringify(condition);
 
       var success = function() {
         $save.attr('disabled', false);
         self.condition = condition;
+        self.reset();
 
         self.displaySuccess(
           'Switch <span class="switch-name">' + self.name + '</span> successfully updated.',
@@ -65,12 +66,10 @@
       var err = function() {
         $save.attr('disabled', false);
       };
-      self.updateSwitch(data, success, err);
+      self.updateSwitch(condition, success, err);
     };
 
     self.render = function() {
-      // TODO: This needs to be aware of various types of switches and allow
-      // modifying it with a nice GUI. For now, we'll edit raw JSON instead
       var $controls = $('<div>').addClass('switch').attr('data-name', self.name);
       $controls.append($('<span>').addClass('name').text(self.name));
       $controls.append(self.renderGui(self.condition));
@@ -84,9 +83,7 @@
 
       var $cancelButton = $('<button>').text('Cancel').addClass('cancel');
       $cancelButton.click(function() {
-        $controls.find('.switch-builder').replaceWith(
-          self.renderGui(self.condition)
-        );
+        self.reset();
       });
 
       var $deleteButton = $('<button>').text('Delete').addClass('delete');
@@ -105,6 +102,10 @@
       return self.$controls;
     };
 
+    self.reset = function() {
+      self.$controls.find('.switch-builder').replaceWith(self.renderGui(self.condition));
+    };
+
     self.renderGui = function(initial) {
       var $builder = $('<div>').addClass('switch-builder');
       var $select = Conditions.baseConditions.asOptions().addClass(
@@ -118,7 +119,7 @@
         }
 
         var previousWidget = self.widget;
-        self.widget = new Conditions.widgets[type]();
+        self.widget = new Conditions.createCondition(type);
 
         if (previousWidget && type === 'raw' && previousWidget.clean()) {
           self.widget.init(previousWidget.buildJSON());
@@ -140,17 +141,9 @@
       return $builder;
     };
 
-    self.updateSwitch = function(switchContent, success, err) {
+    self.updateSwitch = function(condition, success, err) {
       success = success || function() {};
       err = err || function() {};
-
-      try {
-        self.condition = JSON.parse(switchContent);
-      } catch(e) {
-        self.displayError(e, 'Bad JSON Data');
-        err();
-        return;
-      }
 
       $.ajax({
         url: self.baseUrl + 'switch/' + self.name + '/',
