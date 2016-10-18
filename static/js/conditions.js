@@ -724,6 +724,7 @@
 
     self.init = function(data) {
       self.data = data;
+      self.initial = data;
       self.renderForm();
       return self.$form;
     };

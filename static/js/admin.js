@@ -129,7 +129,13 @@
           return;
         }
 
+        var previousWidget = self.widget;
         self.widget = new Conditions.widgets[type]();
+
+        if (previousWidget && type === 'raw' && previousWidget.clean()) {
+          self.widget.init(previousWidget.buildJSON());
+        }
+
         var $condForm = data ? self.widget.init(data) : self.widget.renderForm();
         $stage.html($condForm);
       };
