@@ -96,30 +96,72 @@ guide, and add them to your ```SerializationEngine```'s context by instantiating
 List including your own serializers. ```SerializationEngine.DEFAULTS``` is provided to easily
 concatenate with your own and roll your own set of formats.
 
-## Running tests
-### Docker
+## API
+
+The included API is a spray HTTP/JSON API. Conditions are serialized into JSON as described
+above. The following endpoints are provided:
+
+### Management
+
+Managing individual switches is done via a RESTful endpoint at ```/switch/<switchname>```.
+
+* POSTing a condition as JSON (see serialization) will create or update the named switch
+* GETting a switch will return the configured condition, as JSON, or else 404 if it doesn't exist
+* DELETEing a switch will wipe it
+
+You can list existing switches in a paginated way by just hitting ```/switch/``` with a GET request,
+optionally providing an offset. At the time of writing, this will always return a max of 10 switches.
+
+### Check switch state
+
+To check the state of a switch, you need to POST context which will let flippy decide if the switch
+is on or off, according to the established config. Flippy is agnostic about what is present in that
+context; it simply uses it in conjunction with the configured condition to determine switch state.
+Simple data types are deserialized for you by built-in context handlers, and can be extended with
+more complex serialization logic if, for example, you want to treat a particular object structure
+as a more complex entity.
+
+* The state of a single switch can be checked by POSTing context
+  to ```/switch/<switchname>/is_active```.
+
+* A list of all active switches for your context can be retrieved by POSTing that context
+  to ```/switches/active/```.
+
+## Management interface
+
+Flippy is equipped with an HTTP management interface, in /static. The
+recommended approach for serving this interface, and the approach used by the associated
+flippy-tester project, is to use nginx or another web server to serve the static files,
+proxying requests to flippy itself on a path of your choice. You can retrieve the
+giftig/flippy-admin image from dockerhub to easily serve this interface; it is set up with
+simple nginx config to serve the static files and proxy to flippy in another container, so
+the two can be easily composed.
+
+### Usage
+The admin is equipped with widgets for each of the built-in condition types to make it easy and
+intuitive to assemble complex conditions from individual building blocks. Each widget describes in
+simple English what sort of condition will be applied. In addition, you can edit the raw JSON
+yourself by selecting that option in the drop downs when selecting conditions. The main advantage
+of this is you can copy the raw JSON for full switch conditions or their components and paste them
+into other switches so that components can be easily reused, or you can simply copy the full config
+and save it somewhere to be restored later, letting you take a switch offline without having to
+manually recreate it later.
+
+The interface is intended to be intuitive as long as the meaning of the conditions are understood,
+so for more information on how conditions are built, see
+[the conditions overview](readme-resources/conditions.md). As in all areas, suggestions on improving
+the usability of this interface are welcome; feel free to raise an issue on github.
+
+## Developing
+### Running tests
+#### Docker
 To run tests involving docker, you'll need to make sure docker is installed and that you've
 set the ```DOCKER_URL``` env var.
 
     # By default on linux
     export DOCKER_URL=unix:///var/run/docker.sock
 
-## Development setup
+### Development setup
 See the [giftig/flippy-tester](https://www.github.com/giftig/flippy-tester/) project for a
 ready-to-go dev environment for this project using flippy-standalone and nginx to serve the
 admin site.
-
-## Management interface
-
-Flippy is currently equipped with a basic HTTP management interface, in /static. The
-recommended approach for serving this interface, and the approach used by the associated
-flippy-tester project, is to use nginx or another web server to serve the static files,
-proxying requests to flippy itself on a path of your choice.
-
-You may need to make an update to the js configuration on the ```admin.html``` page if
-you change the paths used; it assumes that the flippy interface will be under ```/flippy```
-on the same domain as the admin page.
-
-Further work will be put into making the admin interface more user friendly and easier to
-serve the pages without modification in the near future; for the moment the interface is
-a prototype.
