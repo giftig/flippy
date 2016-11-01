@@ -254,7 +254,7 @@ button.themed-button.cancel {
 
 #modal-dialog {
   display: none;
-  position: absolute;
+  position: fixed;
   top: 200px;
   left: 100px;
   right: 100px;
@@ -265,7 +265,6 @@ button.themed-button.cancel {
   background: #eee;
   border: 2px solid #90d0d0;
   border-radius: 20px;
-
 }
 
 #modal-dialog h1 {
@@ -277,8 +276,9 @@ button.themed-button.cancel {
   display: block;
   margin: 20px 0;
   width: 100%;
-
   height: 300px;
+
+  font-family: monospace;
 }
 #modal-dialog .controls button:not(:first-child) {
   margin-left: 20px
