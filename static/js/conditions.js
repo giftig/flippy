@@ -604,7 +604,7 @@
       $csvButton.attr('type', 'button');
       $csvButton.click(function() {
         openCsvPopup(function(data) {
-          var options = data.split(',').map(function(e) {
+          var options = data.split(/[\n,]/).map(function(e) {
             return e.replace(/^\s*(.+[^\s])\s*$/, '$1');  // trim strings
           });
 
