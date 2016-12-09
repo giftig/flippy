@@ -8,7 +8,7 @@ import akka.actor.Actor
 import net.liftweb.json._
 import org.slf4j.{Logger, LoggerFactory}
 import spray.httpx.LiftJsonSupport
-import spray.routing.{ExceptionHandler, HttpService}
+import spray.routing._
 
 import com.xantoria.flippy.condition.Condition
 import com.xantoria.flippy.db.Backend
@@ -41,11 +41,27 @@ trait APIHandling extends HttpService with LiftJsonSupport {
   protected implicit val ec: ExecutionContext
   private val logger = LoggerFactory.getLogger(classOf[APIHandling])
 
-  protected implicit def exceptionHandler = ExceptionHandler {
+  protected implicit def exceptionHandler: ExceptionHandler = ExceptionHandler {
     case NonFatal(e) => complete {
       logger.error("Unexpected exception", e)
       500 -> ErrorMessage(e)
     }
+  }
+
+  protected implicit def rejectionHandler: RejectionHandler = RejectionHandler {
+    case MalformedRequestContentRejection(msg, cause) :: _ => {
+      val errorSummary: String = cause map {
+        case c: MappingException => c.cause.getMessage
+        case c => c.getMessage
+      } getOrElse msg
+
+      cause foreach {
+        c => logger.debug("Exception while parsing request content", c)
+      }
+
+      complete(400 -> s"Bad Request: $errorSummary")
+    }
+    case rejections => RejectionHandler.Default(rejections)
   }
 
   def handleSwitch = pathPrefix("switch" / Segment) {

@@ -1,5 +1,7 @@
 package com.xantoria.flippy.serialization
 
+import java.util.regex.PatternSyntaxException
+
 import net.liftweb.json.{Extraction, Formats}
 import net.liftweb.json.JsonAST._
 
@@ -45,7 +47,15 @@ object StringConditionSerializers {
     }
 
     def deserialize(data: JValue)(implicit formats: Formats): StringConditions.Regex = {
-      val pattern = (data \ "pattern").extractOpt[String] map { _.r } getOrElse {
+      val pattern = (data \ "pattern").extractOpt[String] map {
+        s: String => try {
+          s.r
+        } catch {
+          case e: PatternSyntaxException => throw new MalformedConditionDefinitionException(
+            s"[String:Regex] Bad regex '$s': ${e.getMessage}"
+          )
+        }
+      } getOrElse {
         throw new MalformedConditionDefinitionException("[String:Regex] No pattern!")
       }
       new StringConditions.Regex(pattern)
