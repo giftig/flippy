@@ -162,7 +162,7 @@
           <junitxml>.</junitxml>
           <filereports>tests.txt</filereports>
           <suites>com.xantoria.flippy.MainSuite</suites>
-          <parallel>true</parallel>
+          <parallel>false</parallel>
           <stdout>F</stdout> <!-- Full stack trace to stdout -->
         </configuration>
 
