@@ -6,7 +6,7 @@ import scala.concurrent.Future
 import com.redis.RedisClient
 import net.liftweb.json.{Formats, parse => parseJson}
 import net.liftweb.json.Serialization.{write => writeJson}
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import com.xantoria.flippy.condition.Condition
 
@@ -19,6 +19,9 @@ import com.xantoria.flippy.condition.Condition
  * HGET, HSET, HMGET, HSCAN
  */
 trait RedisSupport {
+  protected val namespace: String
+  protected val logger = LoggerFactory.getLogger(classOf[RedisSupport])
+
   protected def rget(key: String)(implicit c: RedisClient): Option[String]
   protected def rset(key: String, data: String)(implicit c: RedisClient): Boolean
   protected def rdel(key: String)(implicit c: RedisClient): Option[Long]
@@ -32,22 +35,13 @@ trait RedisSupport {
   ): Option[List[Option[String]]]
 }
 
-class RedisBackend(
-  host: String,
-  port: Int,
-  namespace: String,
-  batchRetrievalSize: Int = 50
-)(
-  implicit val ec: ExecutionContext,
-  implicit val formats: Formats
-) extends Backend with RedisSupport {
-  private final val ALLOWED_SWITCH_PATTERN = """^[\w-_]{1,64}$""".r
-  private val logger = LoggerFactory.getLogger(classOf[RedisBackend])
-
-  logger.info(s"Using redis backend at $host:$port")
-  protected def client = new RedisClient(host, port)
-
-  // Use namespace as a prefix to provide a concrete implementation of RedisSupport methods
+/**
+ * RedisSupport variant which operates on at a database level, i.e. across the whole keyspace
+ *
+ * Redis commands are implemented as basic GET, SET, DEL, SCAN etc., using the namespace as a
+ * key prefix.
+ */
+trait RedisDatabaseLevelSupport extends RedisSupport {
   protected def rget(key: String)(implicit c: RedisClient): Option[String] = {
     c.get[String](s"$namespace:$key")
   }
@@ -60,11 +54,60 @@ class RedisBackend(
   protected def rscan(cursor: Int, count: Int = 10)(implicit c: RedisClient): Option[
     (Option[Int], Option[List[Option[String]]])
   ] = c.scan[String](cursor, s"$namespace:*", count)
+
   protected def rmget(key: String, keys: String*)(
     implicit c: RedisClient
   ): Option[List[Option[String]]] = {
     c.mget[String](s"$namespace:$key", (keys map { k: String => s"$namespace:$k" }): _*)
   }
+}
+
+/**
+ * RedisSupport variant which operates on a redis hash for the key set
+ *
+ * Redis commands are implemented as HGET, HSET, etc., using namespace as the key of the hash elem
+ */
+trait RedisHashLevelSupport extends RedisSupport {
+  protected def rget(key: String)(implicit c: RedisClient): Option[String] = c.hget[String](
+    namespace, key
+  )
+  protected def rset(key: String, data: String)(implicit c: RedisClient): Boolean = c.hset(
+    namespace, key, data
+  )
+  protected def rdel(key: String)(implicit c: RedisClient): Option[Long] = c.hdel(
+    namespace, key
+  )
+
+  protected def rscan(cursor: Int, count: Int = 10)(implicit c: RedisClient): Option[
+    (Option[Int], Option[List[Option[String]]])
+  ] = c.hscan[String](key = namespace, cursor = cursor, count = count)
+
+  protected def rmget(key: String, keys: String*)(
+    implicit c: RedisClient
+  ): Option[List[Option[String]]] = {
+    val allKeys = key +: keys
+
+    // Just to be annoying, hmget returns a very different type to regular mget
+    c.hmget[String, String](namespace, allKeys: _*) map {
+      results: Map[String, String] => allKeys.map {
+        k: String => results.get(k)
+      }.toList
+    }
+  }
+}
+
+trait RedisBackendHandling extends Backend {
+  this: RedisSupport =>
+
+  protected val host: String
+  protected val port: Int
+  protected val batchRetrievalSize: Int
+  protected implicit val ec: ExecutionContext
+  protected implicit val formats: Formats
+
+  private final val ALLOWED_SWITCH_PATTERN = """^[\w-_]{1,64}$""".r
+
+  protected def client = new RedisClient(host, port)
 
   /**
    * Make sure the switch name provided is acceptable for this backend, or throw an exception
@@ -178,5 +221,28 @@ class RedisBackend(
       }.map { _.flatten }
     }
   }
+}
 
+class RedisBackend(
+  override protected val host: String,
+  override protected val port: Int,
+  override protected val namespace: String,
+  override protected val batchRetrievalSize: Int = 50
+)(
+  implicit val ec: ExecutionContext,
+  implicit val formats: Formats
+) extends RedisBackendHandling with RedisDatabaseLevelSupport {
+  logger.info(s"Using redis backend at $host:$port with global keyspace, prefix $namespace")
+}
+
+class RedisHashBackend(
+  override protected val host: String,
+  override protected val port: Int,
+  override protected val namespace: String,
+  override protected val batchRetrievalSize: Int = 50
+)(
+  implicit val ec: ExecutionContext,
+  implicit val formats: Formats
+) extends RedisBackendHandling with RedisHashLevelSupport {
+  logger.info(s"Using redis backend at $host:$port with hash $namespace")
 }
