@@ -161,6 +161,11 @@ set the ```DOCKER_URL``` env var.
     # By default on linux
     export DOCKER_URL=unix:///var/run/docker.sock
 
+### Building the admin
+You can build the admin docker image like this:
+
+    docker build -f Dockerfile-admin -t <tag> .
+
 ### Development setup
 See the [giftig/flippy-tester](https://www.github.com/giftig/flippy-tester/) project for a
 ready-to-go dev environment for this project using flippy-standalone and nginx to serve the
