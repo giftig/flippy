@@ -28,7 +28,7 @@ trait RedisSupport {
 
   // Yo dawg, I herd you liek options...
   protected def rscan(cursor: Int, count: Int = 10)(implicit c: RedisClient): Option[
-    (Option[Int], Option[List[Option[String]]])
+    (Option[Int], List[(String, String)])
   ]
   protected def rmget(key: String, keys: String*)(
     implicit c: RedisClient
@@ -42,6 +42,29 @@ trait RedisSupport {
  * key prefix.
  */
 trait RedisDatabaseLevelSupport extends RedisSupport {
+
+  /**
+   * The SCAN command only returns redis keys, so transform the result and supplement with an MGET
+   */
+  protected def supplementScan(
+    results: (Option[Int], Option[List[Option[String]]])
+  )(implicit c: RedisClient): (Option[Int], List[(String, String)]) = {
+    val (cursor, entries) = results
+    (
+      cursor,
+      entries flatMap {
+        res: List[Option[String]] => res.flatten map { _.drop(namespace.length + 1) } match {
+          case Nil => None
+          case head :: tail => rmget(head, tail: _*) map {
+            values: List[Option[String]] => ((head +: tail) zip values) collect {
+              case (k, Some(v)) => (k, v)
+            }
+          }
+        }
+      } getOrElse Nil
+    )
+  }
+
   protected def rget(key: String)(implicit c: RedisClient): Option[String] = {
     c.get[String](s"$namespace:$key")
   }
@@ -52,8 +75,8 @@ trait RedisDatabaseLevelSupport extends RedisSupport {
     s"$namespace:$key"
   )
   protected def rscan(cursor: Int, count: Int = 10)(implicit c: RedisClient): Option[
-    (Option[Int], Option[List[Option[String]]])
-  ] = c.scan[String](cursor, s"$namespace:*", count)
+    (Option[Int], List[(String, String)])
+  ] = c.scan[String](cursor, s"$namespace:*", count) map supplementScan
 
   protected def rmget(key: String, keys: String*)(
     implicit c: RedisClient
@@ -68,6 +91,18 @@ trait RedisDatabaseLevelSupport extends RedisSupport {
  * Redis commands are implemented as HGET, HSET, etc., using namespace as the key of the hash elem
  */
 trait RedisHashLevelSupport extends RedisSupport {
+  private def transformScan(
+    results: (Option[Int], Option[List[Option[String]]])
+  ): (Option[Int], List[(String, String)]) = {
+    val (cursor, entries) = results
+    (
+      cursor,
+      entries.map {
+        _.grouped(2).collect { case Some(k) :: Some(v) :: Nil => (k, v) }.toList
+      } getOrElse Nil
+    )
+  }
+
   protected def rget(key: String)(implicit c: RedisClient): Option[String] = c.hget[String](
     namespace, key
   )
@@ -79,8 +114,8 @@ trait RedisHashLevelSupport extends RedisSupport {
   )
 
   protected def rscan(cursor: Int, count: Int = 10)(implicit c: RedisClient): Option[
-    (Option[Int], Option[List[Option[String]]])
-  ] = c.hscan[String](key = namespace, cursor = cursor, count = count)
+    (Option[Int], List[(String, String)])
+  ] = c.hscan[String](key = namespace, cursor = cursor, count = count) map transformScan
 
   protected def rmget(key: String, keys: String*)(
     implicit c: RedisClient
@@ -180,45 +215,27 @@ trait RedisBackendHandling extends Backend {
     logger.info("Scanning redis for switches")
     implicit val c = client
 
-    def fetchKeys(cursor: Int = 0, acc: List[String] = Nil): Future[List[String]] = {
-      val res: Future[Option[(Option[Int], Option[List[Option[String]]])]] = Future(rscan(cursor))
+    def fetch(
+      cursor: Int = 0,
+      acc: List[(String, String)] = Nil
+    ): Future[List[(String, String)]] = {
+      val res: Future[Option[(Option[Int], List[(String, String)])]] = Future(rscan(cursor))
 
       res flatMap {
         _ map {
-          response: (Option[Int], Option[List[Option[String]]]) => {
-            val cur: Int = response._1 getOrElse 0
-            val flatResult: List[String] = (response._2 getOrElse Nil).flatten map {
-              _.drop(namespace.length + 1)
-            }
-            val data: List[String] = acc ++ flatResult
-
-            if (cur != 0) {
-              fetchKeys(cur, data)
-            } else {
-              Future(data)
-            }
-          }
+          case (Some(cur), result) if cur != 0 => fetch(cur, acc ++ result)
+          case (_, result) => Future(acc ++ result)
         } getOrElse { Future(Nil) }
       }
     }
 
+    // Sadly the from/to has to be applied after scanning everything because of sorting
     val from = offset getOrElse 0
     val to = limit map { _ + from }
-    val switches: Future[List[String]] = fetchKeys() map {
-      k: List[String] => k.sorted.slice(from, to getOrElse k.length)
-    }
-
-    // TODO: Use a dedicated future pool for the Future.traverse here
-    switches flatMap {
-      keys: List[String] => Future.traverse(keys.grouped(batchRetrievalSize).toList) {
-        batch: List[String] => switchConfigs(batch: _*) map {
-          results => (batch zip results) collect {
-            // Prevents a None.get in case of race conditions, but a None shouldn't
-            // generally exist for the result
-            case (name, result) if result.isDefined => (name, result.get)
-          }
-        }
-      }.map { _.flatten }
+    fetch() map {
+      s: List[(String, String)] => s.sorted.slice(from, to getOrElse s.length) map {
+        case (k, v) => (k, parseJson(v).extract[Condition])
+      }
     }
   }
 }
