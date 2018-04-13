@@ -1,8 +1,10 @@
 # Flippy
 
-Easy feature switching with arbitrary switches and conditions. Can be run either as a standalone
+Easy feature switching with arbitrary switches and conditions. Runs as a standalone
 application ([giftig/flippy-standalone](https://www.github.com/giftig/flippy-standalone)) with
-an HTTP JSON API, or as a library for scala applications.
+an HTTP JSON API, and can also be used locally as a library for scala applications.
+
+![Admin screenshot #1](readme-resources/screenshots/admin_example_01.png)
 
 ## Switch conditions
 
