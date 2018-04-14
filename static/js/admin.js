@@ -19,6 +19,8 @@
     self.displayError = self.admin.displayError;
     self.displaySuccess = self.admin.displaySuccess;
 
+    self.compressed = false;
+
     self.isUnsaved = function() {
       if (self.deleted) {
         return false;
@@ -71,6 +73,9 @@
 
     self.render = function() {
       var $controls = $('<div>').addClass('switch').attr('data-name', self.name);
+      $controls.on('click', function(e) {
+        self.setCompressed(false);
+      });
       $controls.append($('<span>').addClass('name').text(self.name));
       $controls.append(self.renderGui(self.condition));
 
@@ -84,6 +89,7 @@
       var $cancelButton = $('<button>').text('Cancel').addClass('cancel');
       $cancelButton.click(function() {
         self.reset();
+        return false;
       });
 
       var $deleteButton = $('<button>').text('Delete').addClass('delete');
@@ -99,11 +105,20 @@
       $controls.append($persistControls);
 
       self.$controls = $controls;
+      self.setCompressed(self.compressed);
       return self.$controls;
     };
 
     self.reset = function() {
       self.$controls.find('.switch-builder').replaceWith(self.renderGui(self.condition));
+      self.setCompressed(true);
+    };
+
+    self.setCompressed = function(b) {
+      self.compressed = b;
+      if (self.$controls) {
+        self.$controls[b ? 'addClass' : 'removeClass']('compressed');
+      }
     };
 
     self.renderGui = function(initial) {
@@ -252,6 +267,7 @@
     self.renderSwitches = function(switches) {
       for (var i = 0; i < switches.length; i++) {
         var s = new SwitchBuilder(switches[i], self);
+        s.setCompressed(true);
         self.switches.push(s);
         self.$switchList.append(s.render());
       }
@@ -286,7 +302,7 @@
           {name: name, condition: DEFAULT_CONDITION}, self
         );
         self.switches.push(newSwitch);
-        self.$switchList.prepend(newSwitch.render());
+        self.$switchList.prepend(newSwitch.render(false));
         $newSwitchControls.hide();
         $newSwitch.show();
       });

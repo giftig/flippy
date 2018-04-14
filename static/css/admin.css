@@ -43,6 +43,11 @@ h1 {
   border-radius: 20px;
 }
 
+#flippy-switches .switch.compressed select,
+#flippy-switches .switch.compressed button {
+  display: none;
+}
+
 #flippy-switches .switch .name {
   display: block;
   width: 250px;
