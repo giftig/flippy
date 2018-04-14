@@ -9,3 +9,5 @@
 # Target
 /target
 /build
+/**/target
+/**/build
