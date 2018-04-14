@@ -6,117 +6,17 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.xantoria</groupId>
   <artifactId>flippy</artifactId>
-  <version>0.2.1-SNAPSHOT</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>A feature switching module for scala applications</description>
   <url>https://www.github.com/giftig/flippy</url>
 
-  <licenses>
-    <license>
-      <name>The MIT License</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-
-  <developers>
-    <developer>
-      <name>Rob Moore</name>
-      <email>giftiger.wunsch@xantoria.com</email>
-      <organization>Xantoria Games</organization>
-      <organizationUrl>http://www.xantoria.com/</organizationUrl>
-    </developer>
-  </developers>
-
-  <scm>
-    <connection>scm:git:git@github.com:giftig/flippy.git</connection>
-    <developerConnection>scm:git:git@github.com:giftig/flippy.git</developerConnection>
-    <url>git@github.com:giftig/flippy.git</url>
-  </scm>
-
-  <properties>
-    <project.build.scalaVersion>2.10.4</project.build.scalaVersion>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <!-- RELEASE PROFILE: For releasing to maven central via OSSRH -->
-  <profiles>
-    <profile>
-      <id>release</id>
-      <distributionManagement>
-        <snapshotRepository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-      </distributionManagement>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>jar-no-fork</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>empty-javadoc</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <configuration>
-                  <classifier>javadoc</classifier>
-                  <classesDirectory>${basedir}/javadoc</classesDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.5</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.3</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  <parent>
+    <groupId>com.xantoria</groupId>
+    <artifactId>flippy-group</artifactId>
+    <version>0.2.1-SNAPSHOT</version>
+  </parent>
 
   <build>
     <defaultGoal>package</defaultGoal>

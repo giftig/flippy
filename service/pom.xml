@@ -5,9 +5,17 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.xantoria</groupId>
   <artifactId>flippy-standalone</artifactId>
-  <version>0.2.1-SNAPSHOT</version>
+
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>A feature switching service with a JSON API</description>
+  <url>https://www.github.com/giftig/flippy</url>
+
+  <parent>
+    <groupId>com.xantoria</groupId>
+    <artifactId>flippy-group</artifactId>
+    <version>0.2.1-SNAPSHOT</version>
+  </parent>
 
   <properties>
     <project.build.scalaVersion>2.10.4</project.build.scalaVersion>
