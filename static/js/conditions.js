@@ -6,7 +6,7 @@
     ip_range: 'IPv4 range',
     multiple: 'and/or',
     namespaced: 'field must match...',
-    one_of: 'one of',
+    one_of: 'one of...',
     proportion: 'percentage',
     raw: '(edit as JSON)',
     value_range: 'between values...'
@@ -43,19 +43,41 @@
     return c;
   };
 
-  var baseConditions = ['namespaced', 'multiple', 'not', 'on', 'off', 'raw'];
+  var baseConditions = [
+    {
+      title: 'Global',
+      conditions: ['on', 'off']
+    },
+    {
+      title: 'Conditional',
+      conditions: ['namespaced', 'multiple', 'not']
+    },
+    {
+      title: 'Advanced',
+      conditions: ['raw']
+    }
+  ];
   var subConditions = [
-    'equals',
-    'namespaced',
-    'multiple',
-    'not',
-    'regex',
-    'substring',
-    'one_of',
-    'ip_range',
-    'proportion',
-    'value_range',
-    'raw'
+    {
+      title: 'Selectors',
+      conditions: ['multiple', 'namespaced']
+    },
+    {
+      title: 'Simple',
+      conditions: ['equals', 'one_of', 'not']
+    },
+    {
+      title: 'Matchers',
+      conditions: ['regex', 'substring', 'value_range']
+    },
+    {
+      title: 'Rollout',
+      conditions: ['proportion']
+    },
+    {
+      title: 'Advanced',
+      conditions: ['ip_range', 'raw']
+    }
   ];
 
   var isFloat = function(s) {
@@ -70,11 +92,40 @@
     var $conditions = $('<select>');
     $conditions.append($('<option>').val('').text(defaultLabel));
 
-    for (var i = 0; i < conditions.length; i++) {
-      var cond = conditions[i];
-      var $opt = $('<option>').val(cond).text(conditionAliases[cond] || cond);
+    // Takes a condition name, resolves aliases, and creates an $option
+    var createOption = function(cond) {
+      return $('<option>').val(cond).text(conditionAliases[cond] || cond);
+    };
+
+    // Takes a list of condition names and/or group objects and returns a list of
+    // elements to stick into a select (options and/or optgroups containing options)
+    var createOptions = function(condList) {
+      var acc = [];
+
+      for (var i = 0; i < condList.length; i++) {
+        var cond = condList[i];
+        var $opt;
+
+        if (typeof cond === 'object') {
+          $opt = $('<optgroup>').attr('label', cond.title);
+          var subOpts = createOptions(cond.conditions);
+          for (var j = 0; j < subOpts.length; j++) {
+            $opt.append(subOpts[j]);
+          }
+          acc.push($opt);
+        } else {
+          acc.push(createOption(cond));
+        }
+      }
+      return acc;
+    };
+
+    var opts = createOptions(conditions);
+    for (var i = 0; i < opts.length; i++) {
+      var $opt = opts[i];
       $conditions.append($opt);
     }
+
     return $conditions;
   };
   baseConditions.asOptions = function(defaultLabel) {
