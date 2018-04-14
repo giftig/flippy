@@ -6,6 +6,18 @@ an HTTP JSON API, and can also be used locally as a library for scala applicatio
 
 ![Admin screenshot #1](readme-resources/screenshots/admin_example_01.png)
 
+## What is feature-switching?
+
+Feature switching, also known as feature toggle, feature flipping, or feature flags, is a technique
+used to deliver new features to users in a controlled, safe, and testable way. It is used to allow
+safe continuous delivery of software via techniques such as:
+
+* **Canary releasing**, initially releasing features to a small proportion of your userbase before
+rolling out
+
+to conduct A-B testing,gauging reaction to new features, and
+
+
 ## Quickstart
 
 A ```docker-compose.yaml``` is provided to make it easy to quickly spin up flippy with a redis
@@ -29,9 +41,18 @@ easily export any variable in that file to change the versions or ports you want
 
 ## Switch conditions
 
-A number of default conditions are provided, and can be assembled to form a "master condition"
+Many default conditions are provided, and can be assembled to form a "master condition"
 which represents all the conditions which go into determining if a switch is on or off based on
-a set of data.
+a set of data. The admin site makes it very easy to construct these conditions, which are encoded
+as JSON and defined by classes extending `Condition`.
+
+For more information, see [the conditions overview](readme-resources/conditions.md)
+
+
+### Scala DSL
+There is also a small scala DSL provided in the flippy library in case you use the "mirror"
+backend as a scala client for flippy, or use flippy as a library within your application. It's
+also useful for testing.
 
     // Only users whose names are between these fine gentlemen shall have the switch on
     val condition = StringConditions.Range("Albert", "George") on "name"
@@ -50,7 +71,6 @@ You can also define your own switch condition by extending `Condition`:
     backend.configureSwitch("lotsofdamage", condition)
     backend.isActive("lotsofdamage", Map("name" -> "Cloud", "HP" -> 7777))  // on
 
-For more information, see [the conditions overview](readme-resources/conditions.md)
 
 
 ## Backends
