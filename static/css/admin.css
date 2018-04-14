@@ -169,7 +169,8 @@ button.themed-button.cancel {
 }
 #flippy-switches .condition-cfg.iprange,
 #flippy-switches .condition-cfg.regex,
-#flippy-switches .condition-cfg.substring {
+#flippy-switches .condition-cfg.substring,
+#flippy-switches .condition-cfg.value-range {
   border-color: #099;
   color: #099;
   background-color: #eff;

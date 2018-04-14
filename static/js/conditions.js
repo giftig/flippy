@@ -3,12 +3,13 @@
 
   // Pretty names. Default to the same name if not present in this mapping
   var conditionAliases = {
-    one_of: 'one of',
     ip_range: 'IPv4 range',
     multiple: 'and/or',
     namespaced: 'field must match...',
+    one_of: 'one of',
     proportion: 'percentage',
-    raw: '(edit as JSON)'
+    raw: '(edit as JSON)',
+    value_range: 'between values...'
   };
 
   // Map of official serialisation names to internal class names
@@ -20,6 +21,8 @@
     'string:regex': 'regex',
     'string:oneof': 'one_of',
     'string:substring': 'substring',
+    'string:range': 'value_range',
+    'number:range': 'value_range',
     'true': 'on'
   };
 
@@ -51,8 +54,14 @@
     'one_of',
     'ip_range',
     'proportion',
+    'value_range',
     'raw'
   ];
+
+  var isFloat = function(s) {
+    // Parse float still works with junk at the end of the string, which I don't like
+    return s.match(/^[0-9]*\.?[0-9]+$/);
+  };
 
   // Convenience function for generating option lists from available conditions
   var generateConditionList = function(conditions, defaultLabel) {
@@ -685,6 +694,58 @@
     };
   };
 
+  Widgets.value_range = function() {
+    var self = this;
+    self.low = null;
+    self.high = null;
+    self.dataType = 'string';
+
+    self.init = function(data) {
+      self.renderForm();
+      self.dataType = data.condition_type.split(':')[0];
+      self.$form.children('[name="low"]').val(data.low);
+      self.$form.children('[name="high"]').val(data.high);
+      return self.$form;
+    };
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg value-range');
+      var $low = $('<input>').attr('name', 'low');
+      var $high = $('<input>').attr('name', 'high');
+      $form.html($low);
+      $form.append($high);
+      $low.before('...from');
+      $high.before('to');
+
+      self.$form = $form;
+      return self.$form;
+    };
+
+    self.clean = function() {
+      var low = self.$form.children('[name="low"]').val();
+      var high = self.$form.children('[name="high"]').val();
+
+      // TODO: Allow overriding this if they have numbers in strings
+      if (isFloat(low) && isFloat(high)) {
+        low = parseFloat(low);
+        high = parseFloat(high);
+        self.dataType = 'number';
+      }
+
+      self.low = low;
+      self.high = high;
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return {
+        condition_type: self.dataType + ':range',
+        low: self.low,
+        high: self.high
+      };
+    };
+  };
+
   Widgets.proportion = function() {
     var self = this;
     self.prop = null;
@@ -710,8 +771,7 @@
     self.clean = function() {
       var prop = self.$form.children('[name="prop"]').val();
 
-      // Parse float still works with junk at the end of the string, which I don't like
-      if (!prop.match(/^[0-9]*\.?[0-9]+$/)) {
+      if (!isFloat(prop)) {
         self.error = 'Non-numeric proportion given';
         return false;
       }
