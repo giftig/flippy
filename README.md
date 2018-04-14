@@ -15,8 +15,28 @@ safe continuous delivery of software via techniques such as:
 * **Canary releasing**, initially releasing features to a small proportion of your userbase before
 rolling out
 
-to conduct A-B testing,gauging reaction to new features, and
+* **A-B testing**, gauging reaction to new features, especially when replacing an existing feature
 
+* **Hot switching** Quickly flipping on/off features which are useful only some of the time, or
+features which are less performant and may need to be disabled under high load
+
+## What can I use to switch?
+
+Flippy accepts arbitrary JSON data that you choose to provide as context to its switches, so it is
+agnostic about what that data is, but does allow you a flexible set of tools to make decisions
+based on your data.
+
+Typical data you might send as context includes:
+* **Localisation data**, such as user country, IP address, language or locale
+* **Preference data**, such as subscription status, advertising preferences, interface
+configuration preferences and more
+* **Account data** such as username, e-mail address, when they first registered, etc.
+* **Session data** such as whether they're logged in, what activities they've recently been
+doing, how long they've been active, etc.
+
+You can then construct rules on this data as simple as "on for everyone" or "on for 20% of users"
+or as complex as "on for this list of usernames, but not in this country, and blacklist these
+IP ranges".
 
 ## Quickstart
 
