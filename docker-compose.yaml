@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  admin:
+    image: giftig/flippy-admin:$FLIPPY_ADMIN_VERSION
+    depends_on:
+      - flippy
+    ports:
+      - $FLIPPY_ADMIN_PORT:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./static/:/usr/share/nginx/html:ro
+
+  flippy:
+    image: giftig/flippy:$FLIPPY_VERSION
+    depends_on:
+      - redis
+    ports:
+      - $FLIPPY_PORT:8080
+    volumes:
+      - ./build:/usr/local/flippy
+    command: '--port 8080 --backend-host redis --backend-port 6379'
+
+  redis:
+    image: redis
