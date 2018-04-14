@@ -6,6 +6,27 @@ an HTTP JSON API, and can also be used locally as a library for scala applicatio
 
 ![Admin screenshot #1](readme-resources/screenshots/admin_example_01.png)
 
+## Quickstart
+
+A ```docker-compose.yaml``` is provided to make it easy to quickly spin up flippy with a redis
+backend and an admin site. All you need is docker and docker-compose. To get a working environment
+with the latest stable release, use:
+
+    docker-compose up -d
+
+This will expose the flippy API on port 9001 by default, and you can access the admin interface
+at http://localhost:9002.
+
+### Change versions
+
+A ```.env``` is also provided to ```docker-compose``` providing default versions and ports; you can
+easily export any variable in that file to change the versions or ports you want to run on.
+
+    export FLIPPY_VERSION=edge
+    export FLIPPY_ADMIN_VERSION=edge
+    export FLIPPY_ADMIN_PORT=80
+    docker-compose up -d
+
 ## Switch conditions
 
 A number of default conditions are provided, and can be assembled to form a "master condition"
@@ -154,7 +175,7 @@ so for more information on how conditions are built, see
 [the conditions overview](readme-resources/conditions.md). As in all areas, suggestions on improving
 the usability of this interface are welcome; feel free to raise an issue on github.
 
-## Developing
+## Contributing
 ### Running tests
 #### Docker
 To run tests involving docker, you'll need to make sure docker is installed and that you've
@@ -163,12 +184,31 @@ set the ```DOCKER_URL``` env var.
     # By default on linux
     export DOCKER_URL=unix:///var/run/docker.sock
 
+### Building the service
+To build the service, you'll firstly need to build your changes to the core library here with
+`mvn package`, and then rebuild the standalone-service package at
+[giftig/flippy-standalone](https://www.github.com/giftig/flippy-standalone/) which will pull
+this project as a dependency. You can then simply build your own copy of the docker image using
+the Dockerfile in that project.
+
+[TODO] I will be moving the standalone version of this service into this repository shortly and
+setting it up as a maven submodule to ensure everything lives in one place and is easier to work
+with.
+
 ### Building the admin
 You can build the admin docker image like this:
 
     docker build -f Dockerfile-admin -t <tag> .
 
+If you want quick turnaround time for testing admin changes, you can also work on the admin
+directly without having to rebuild the image by simply mounting your changes into the image
+via docker-compose. Just add the following line to the ```volumes``` section of ```admin```:
+
+    - ./static/:/usr/share/nginx/html:ro
+
 ### Development setup
-See the [giftig/flippy-tester](https://www.github.com/giftig/flippy-tester/) project for a
-ready-to-go dev environment for this project using flippy-standalone and nginx to serve the
-admin site.
+Once you've built your own images for flippy-standalone and the admin, you can simply use the
+"Quickstart" guide above and set your versions using environment variables.
+
+You can also run the application natively and serve the admin site however you like, but the
+docker solution is pre-spun for you.

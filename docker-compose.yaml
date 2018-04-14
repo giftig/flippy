@@ -9,7 +9,6 @@ services:
       - $FLIPPY_ADMIN_PORT:80
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./static/:/usr/share/nginx/html:ro
 
   flippy:
     image: giftig/flippy:$FLIPPY_VERSION
