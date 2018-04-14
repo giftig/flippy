@@ -53,7 +53,9 @@ object SerializationEngine {
     StringConditionSerializers.Regex,
     StringConditionSerializers.Substring,
     StringConditionSerializers.OneOf,
-    NetworkingSerializer.IPRange
+    NetworkingSerializer.IPRange,
+    NumberConditionSerializers.Range,
+    NumberConditionSerializers.Multiple
   )
 
   def apply(): SerializationEngine = new SerializationEngine(DEFAULTS)
