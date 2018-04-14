@@ -17,7 +17,7 @@ rolling out
 
 * **A-B testing**, gauging reaction to new features, especially when replacing an existing feature
 
-* **Hot switching** Quickly flipping on/off features which are useful only some of the time, or
+* **Hot switching**, quickly flipping on/off features which are useful only some of the time, or
 features which are less performant and may need to be disabled under high load
 
 ## What can I use to switch?
