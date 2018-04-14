@@ -38,6 +38,9 @@ You can then construct rules on this data as simple as "on for everyone" or "on 
 or as complex as "on for this list of usernames, but not in this country, and blacklist these
 IP ranges".
 
+For details on how to construct rules, see [Switch conditions](#switch-conditions) and the
+[Conditions overview](readme-resources/conditions.md)
+
 ## Quickstart
 
 A ```docker-compose.yaml``` is provided to make it easy to quickly spin up flippy with a redis
