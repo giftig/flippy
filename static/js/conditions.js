@@ -86,6 +86,10 @@
     // Parse float still works with junk at the end of the string, which I don't like
     return s.match(/^[0-9]*\.?[0-9]+$/);
   };
+  var isInt = function(s) {
+    // parseInt still works with junk at the end of the string, which I don't like
+    return s.match(/^[0-9]+$/);
+  };
 
   // Convenience function for generating option lists from available conditions
   var generateConditionList = function(conditions, defaultLabel) {
@@ -805,12 +809,17 @@
 
     self.init = function(data) {
       self.renderForm();
-      self.modulo = data.modulo;
+      self.$form.find('[name="modulo"]').val(data.modulo);
+      return self.$form;
     };
 
     self.renderForm = function() {
       var $form = $('<form>').addClass('condition-cfg modulo');
-      var $mod = $('<input>').attr('name', 'modulo').attr('type', 'number');
+      var $mod = $('<input>').attr('name', 'modulo');  // TODO: type = number. Needs styling
+      $form.html($mod);
+      $mod.before('...must be a multiple of');
+      self.$form = $form;
+      return self.$form;
     };
 
     self.clean = function() {
