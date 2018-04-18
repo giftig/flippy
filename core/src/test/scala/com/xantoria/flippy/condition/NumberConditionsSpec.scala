@@ -61,4 +61,10 @@ class NumberConditionsSpec extends BaseSpec {
     val checks = (1 to 20) map { _ * 0.1 }
     checks foreach { d: Double => m2.appliesTo(d) should be (false) }
   }
+
+  it should "consider no number a multiple of zero" in {
+    val m0 = new Multiple(0)
+    val checks = -5 to 5
+    checks foreach { i: Int => m0.appliesTo(i) should be (false) }
+  }
 }

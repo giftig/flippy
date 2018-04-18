@@ -27,6 +27,6 @@ object NumberConditions {
    */
   class Multiple(val n: Int) extends NCondition {
     def appliesTo(d: Double): Boolean = false
-    def appliesTo(i: Int): Boolean = i % n == 0
+    def appliesTo(i: Int): Boolean = n != 0 && i % n == 0
   }
 }
