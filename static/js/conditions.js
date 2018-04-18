@@ -4,6 +4,7 @@
   // Pretty names. Default to the same name if not present in this mapping
   var conditionAliases = {
     ip_range: 'IPv4 range',
+    modulo: 'multiple of...',
     multiple: 'and/or',
     namespaced: 'field must match...',
     one_of: 'one of...',
@@ -23,6 +24,7 @@
     'string:substring': 'substring',
     'string:range': 'value_range',
     'number:range': 'value_range',
+    'integer:is_multiple': 'modulo',
     'true': 'on'
   };
 
@@ -68,7 +70,7 @@
     },
     {
       title: 'Matchers',
-      conditions: ['regex', 'substring', 'value_range']
+      conditions: ['regex', 'substring', 'value_range', 'modulo']
     },
     {
       title: 'Rollout',
@@ -793,6 +795,45 @@
         condition_type: self.dataType + ':range',
         low: self.low,
         high: self.high
+      };
+    };
+  };
+
+  Widgets.modulo = function() {
+    var self = this;
+    self.modulo = null;
+
+    self.init = function(data) {
+      self.renderForm();
+      self.modulo = data.modulo;
+    };
+
+    self.renderForm = function() {
+      var $form = $('<form>').addClass('condition-cfg modulo');
+      var $mod = $('<input>').attr('name', 'modulo').attr('type', 'number');
+    };
+
+    self.clean = function() {
+      var modulo = self.$form.children('[name="modulo"]').val();
+      if (!isInt(modulo)) {
+        self.error = 'A value can only be a multiple of an integer!';
+        return false;
+      }
+
+      modulo = parseInt(modulo);
+      if (modulo === 0) {
+        self.error = 'A value cannot be a multiple of zero.';
+        return false;
+      }
+
+      self.modulo = modulo;
+      return true;
+    };
+
+    self.buildJSON = function() {
+      return {
+        condition_type: 'integer:is_multiple',
+        modulo: self.modulo
       };
     };
   };
