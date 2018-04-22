@@ -86,10 +86,15 @@
     </dependency>
 
     <!-- Serialization -->
+    <!-- FIXME: Remove liftweb, replace with spray -->
     <dependency>
       <groupId>net.liftweb</groupId>
       <artifactId>lift-json_2.11</artifactId>
       <version>3.2.0</version>
+    <dependency>
+      <groupId>io.spray</groupId>
+      <artifactId>spray-json_2.11</artifactId>
+      <version>1.3.4</version>
     </dependency>
 
     <!-- Logging -->
@@ -108,31 +113,15 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- Spray and akka for API -->
+    <!-- Akka-http for API -->
     <dependency>
-      <groupId>io.spray</groupId>
-      <artifactId>spray-can_2.11</artifactId>
-      <version>1.3.1</version>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-http_2.11</artifactId>
+      <version>${project.build.akkaHttpVersion}</version>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>io.spray</groupId>
-      <artifactId>spray-client_2.11</artifactId>
-      <version>1.3.1</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.spray</groupId>
-      <artifactId>spray-routing_2.11</artifactId>
-      <version>1.3.1</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.spray</groupId>
-      <artifactId>spray-httpx_2.11</artifactId>
-      <version>1.3.1</version>
-      <optional>true</optional>
-    </dependency>
+
+    <!-- TODO: Might only be used by akka-http, in which case I can remove its direct ref -->
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-actor_2.11</artifactId>

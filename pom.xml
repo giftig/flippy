@@ -52,7 +52,8 @@
   <properties>
     <project.build.scalaVersion>2.11.11</project.build.scalaVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.build.akkaVersion>2.5.12</project.build.akkaVersion>
+    <project.build.akkaVersion>2.5.11</project.build.akkaVersion>
+    <project.build.akkaHttpVersion>10.1.1</project.build.akkaHttpVersion>
   </properties>
 
   <build>

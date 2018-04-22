@@ -138,26 +138,12 @@
       <version>3.0</version>
     </dependency>
 
-    <!-- Spray and akka for API -->
-    <dependency>
-      <groupId>io.spray</groupId>
-      <artifactId>spray-can_2.11</artifactId>
-      <version>1.3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>io.spray</groupId>
-      <artifactId>spray-routing_2.11</artifactId>
-      <version>1.3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>io.spray</groupId>
-      <artifactId>spray-httpx_2.11</artifactId>
-      <version>1.3.1</version>
-    </dependency>
+    <!-- Akka HTTP for API -->
     <dependency>
       <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-actor_2.11</artifactId>
-      <version>${project.build.akkaVersion}</version>
+      <artifactId>akka-http_2.11</artifactId>
+      <version>${project.build.akkaHttpVersion}</version>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>

@@ -5,10 +5,10 @@ import scala.util.{Success, Failure}
 import scala.util.control.NonFatal
 
 import akka.actor.Actor
-import net.liftweb.json._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.server.Directives._
 import org.slf4j.{Logger, LoggerFactory}
-import spray.httpx.LiftJsonSupport
-import spray.routing._
+import spray.json._
 
 import com.xantoria.flippy.condition.Condition
 import com.xantoria.flippy.db.Backend
@@ -36,7 +36,7 @@ object ErrorMessage {
   )
 }
 
-trait APIHandling extends HttpService with LiftJsonSupport {
+trait APIHandling extends HttpService with SprayJsonSupport {
   protected val backend: Backend
   protected implicit val ec: ExecutionContext
   private val logger = LoggerFactory.getLogger(classOf[APIHandling])
