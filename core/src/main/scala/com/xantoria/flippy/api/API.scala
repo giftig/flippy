@@ -6,7 +6,15 @@ import scala.util.control.NonFatal
 
 import akka.actor.Actor
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.{
+  ExceptionHandler,
+  MalformedRequestContentRejection,
+  RejectionHandler
+}
+import net.liftweb.json.MappingException
 import org.slf4j.{Logger, LoggerFactory}
 import spray.json._
 
@@ -36,7 +44,7 @@ object ErrorMessage {
   )
 }
 
-trait APIHandling extends HttpService with SprayJsonSupport {
+trait APIHandling extends SprayJsonSupport {
   protected val backend: Backend
   protected implicit val ec: ExecutionContext
   private val logger = LoggerFactory.getLogger(classOf[APIHandling])
@@ -48,20 +56,21 @@ trait APIHandling extends HttpService with SprayJsonSupport {
     }
   }
 
-  protected implicit def rejectionHandler: RejectionHandler = RejectionHandler {
-    case MalformedRequestContentRejection(msg, cause) :: _ => {
-      val errorSummary: String = cause map {
-        case c: MappingException => c.cause.getMessage
-        case c => c.getMessage
-      } getOrElse msg
-
-      cause foreach {
-        c => logger.debug("Exception while parsing request content", c)
+  protected implicit def rejectionHandler: RejectionHandler = {
+    RejectionHandler
+      .newBuilder()
+      .handle {
+        case MalformedRequestContentRejection(msg, cause) => {
+          logger.debug("Exception while parsing request content", cause)
+          val errorSummary: String = cause match {
+            case c: MappingException => c.cause.getMessage
+            case c => c.getMessage
+          }
+          complete(400 -> s"Bad Request: $errorSummary")
+        }
       }
-
-      complete(400 -> s"Bad Request: $errorSummary")
-    }
-    case rejections => RejectionHandler.Default(rejections)
+      .result()
+      .withFallback(RejectionHandler.default)
   }
 
   def handleSwitch = pathPrefix("switch" / Segment) {
@@ -150,8 +159,4 @@ class API(val backend: Backend)(
   implicit val ec: ExecutionContext
 ) extends Actor with APIHandling {
   implicit def liftJsonFormats: Formats = formats
-
-  val system = context.system
-  def actorRefFactory = context
-  def receive = runRoute(flippyRoutes)
 }

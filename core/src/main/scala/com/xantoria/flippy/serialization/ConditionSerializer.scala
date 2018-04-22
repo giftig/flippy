@@ -2,40 +2,41 @@ package com.xantoria.flippy.serialization
 
 import scala.reflect._
 
-import net.liftweb.json.{Extraction, Formats, Serializer, ShortTypeHints, TypeInfo}
-import net.liftweb.json.JsonAST._
+import spray.json._
 
 import com.xantoria.flippy.condition.Condition
 import com.xantoria.flippy.condition.NamespacedCondition
 
-class MalformedConditionDefinitionException(msg: String) extends RuntimeException(msg)
-class UnsupportedConditionTypeException(condType: String) extends RuntimeException(condType)
+class MalformedConditionDefinitionException(msg: String) extends DeserializationException(msg)
+class UnsupportedConditionTypeException(val condType: String) extends DeserializationException(
+  s"Unsupported condition type: $condType"
+)
 
 class SerializationEngine(
   val conditionTypes: List[ConditionSerializer[_]]
-) extends Serializer[Condition] {
-  private val Class = classOf[Condition]
+) extends RootJsonFormat[Condition] {
 
-  def deserialize(implicit formats: Formats): PartialFunction[(TypeInfo, JValue), Condition] = {
-    case (TypeInfo(Class, _), data) => {
-      val desiredType = (data \ "condition_type").extractOpt[String]
-      val concrete = desiredType.map {
-        desired: String => conditionTypes.find { _.typeName == desired }
-      }.flatten getOrElse {
-        throw new UnsupportedConditionTypeException(desiredType.getOrElse("none specified"))
-      }
-
-      concrete.deserialize(data).asInstanceOf[Condition]
+  def read(v: JsValue): Condition = {
+    val desiredType: JsString = v.asJsObject.getFields("condition_type").headOption collect {
+      case s: JsString => s
+    } getOrElse {
+      throw new UnsupportedConditionTypeException(s)
     }
+
+    val concrete = desiredType.map {
+      desired: String => conditionTypes.find { _.typeName == desired }
+    }.flatten getOrElse {
+      throw new DeserializationException(desiredType.getOrElse("none specified"))
+    }
+
+    concrete.deserialize(data)
   }
 
-  def serialize(implicit formats: Formats): PartialFunction[Any, JValue] = {
-    case c: Condition => {
-      val serializer = conditionTypes.find { _.canSerialize(c) }.getOrElse {
-        throw new UnsupportedConditionTypeException(c.getClass.getName)
-      }
-      serializer.serialize(c)
+  def write(c: Condition): JsValue = {
+    val serializer = conditionTypes.find { _.canSerialize(c) }.getOrElse {
+      throw new UnsupportedConditionTypeException(c.getClass.getName)
     }
+    serializer.serialize(c)
   }
 }
 
@@ -58,17 +59,18 @@ object SerializationEngine {
     NumberConditionSerializers.Multiple
   )
 
+  // TODO: why not simply a default arg on constructor?
   def apply(): SerializationEngine = new SerializationEngine(DEFAULTS)
 }
 
 abstract class ConditionSerializer[T <: Condition] {
   val typeName: String
-  def typeField = JField("condition_type", JString(typeName))
+  def typeField: (String, JsString) = ("condition_type", JsString(typeName)
 
   def canSerialize(condition: Condition): Boolean
 
-  def serialize(condition: Condition)(implicit formats: Formats): JValue
-  def deserialize(data: JValue)(implicit formats: Formats): T
+  def write(condition: Condition)(implicit formats: Formats): JsValue
+  def read(data: JsValue)(implicit formats: Formats): T
 }
 
 object ConditionSerializer {
@@ -77,15 +79,15 @@ object ConditionSerializer {
 
     def canSerialize(c: Condition) = c.isInstanceOf[Condition.Equals]
 
-    def deserialize(data: JValue)(implicit formats: Formats): Condition.Equals = {
-      val value: Any = (data \ "value").extract[ContextValue].underlying
-      new Condition.Equals(value)
+    override def read(data: JsValue)(implicit formats: Formats): Condition.Equals = {
+      data.asJsObject.getFields("value") map {
+        case v => Condition.Equals(v.convertTo[ContextValue].underlying)
+      } getOrElse { throw new DeserializationException("Missing value") }
     }
 
-    override def serialize(c: Condition)(implicit formats: Formats): JValue = {
+    override def write(c: Condition)(implicit formats: Formats): JValue = {
       val cond = c.asInstanceOf[Condition.Equals]
-      val serializedValue: JValue = Extraction.decompose(new ContextValue(cond.requiredValue))
-      JObject(List(typeField, JField("value", serializedValue)))
+      JsObject(Map("value" -> new ContextValue(cond.requiredValue).toJson) + typeField)
     }
   }
 
@@ -94,16 +96,15 @@ object ConditionSerializer {
 
     def canSerialize(c: Condition) = c.isInstanceOf[Condition.Not]
 
-    def deserialize(data: JValue)(implicit formats: Formats): Condition.Not = Condition.Not(
-      (data \ "condition").extract[Condition]
-    )
+    override def read(data: JsValue)(implicit formats: Formats): Condition.Not = {
+      data.asJsObject.getFields("condition") map {
+        v => Condition.Not(v)
+      } getOrElse { throw new DeserializationException("Missing condition") }
+    }
 
-    def serialize(c: Condition)(implicit formats: Formats): JValue = {
+    override def write(c: Condition)(implicit formats: Formats): JValue = {
       val cond = c.asInstanceOf[Condition.Not]
-      JObject(List(
-        typeField,
-        JField("condition", Extraction.decompose(cond.inverted))
-      ))
+      JsObject(Map("not" -> cond.inverted.toJson))
     }
   }
 

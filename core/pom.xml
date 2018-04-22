@@ -91,6 +91,7 @@
       <groupId>net.liftweb</groupId>
       <artifactId>lift-json_2.11</artifactId>
       <version>3.2.0</version>
+    </dependency>
     <dependency>
       <groupId>io.spray</groupId>
       <artifactId>spray-json_2.11</artifactId>
@@ -120,8 +121,18 @@
       <version>${project.build.akkaHttpVersion}</version>
       <optional>true</optional>
     </dependency>
-
-    <!-- TODO: Might only be used by akka-http, in which case I can remove its direct ref -->
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-http-spray-json_2.11</artifactId>
+      <version>${project.build.akkaHttpVersion}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-stream_2.11</artifactId>
+      <version>${project.build.akkaVersion}</version>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-actor_2.11</artifactId>

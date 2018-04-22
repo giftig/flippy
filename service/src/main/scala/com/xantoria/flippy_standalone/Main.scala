@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 import akka.actor._
 import akka.io.{IO => AkkaIO}
 import akka.pattern.ask
-import akka.util.Timeout
+import akka.stream.ActorMaterializer
 import net.liftweb.json.Formats
 import org.slf4j.LoggerFactory
 import spray.can.Http
@@ -42,11 +42,14 @@ object Main {
 
     val backend = configureBackend(cfg)
 
-    implicit val timeout = Timeout(5.seconds)
     implicit val system = ActorSystem("flippy")
+    implicit val materializer = ActorMaterializer()
+    implicit val ec: ExecutionContext = system.dispatcher
 
-    val service = system.actorOf(Props(new FlippyAPI(backend)))
-    val bindResult = AkkaIO(Http) ? Http.Bind(service, interface = cfg.interface, port = cfg.port)
+    val service = new FlippyAPI(backend)
+    val bindResult = Http().bindAndHandle(service.flippyRoutes, cfg.interface, cfg.port)
+
+    // TODO: This may have to change significantly
     bindResult foreach {
       case failure: Http.CommandFailed => {
         logger.error("Failed to bind to the interface! Shutting down...")

@@ -1,7 +1,6 @@
 package com.xantoria.flippy.serialization
 
-import net.liftweb.json.{Extraction, Formats, MappingException, Serializer, TypeInfo}
-import net.liftweb.json.JsonAST._
+import spray.json._
 
 /**
  * Represents a value in context which can be compared
@@ -18,38 +17,28 @@ class ContextValue(val underlying: Any)
  * with JSON structs of various formats. The default set of rules will extract simple JValues
  * into sensible corresponding scala types, String, Int, etc.
  */
-class ContextValueSerializer extends Serializer[ContextValue] {
-  private val Class = classOf[ContextValue]
-
-  def deserialize(implicit formats: Formats): PartialFunction[(TypeInfo, JValue), ContextValue] = {
-    case (TypeInfo(Class, _), value) => new ContextValue(
-      value match {
-        case v: JString => v.extract[String]
-        case v: JInt => v.extract[Int]
-        case v: JDouble => v.extract[Double]
-        case v: JBool => v.extract[Boolean]
-        case v: JArray => v.arr.map { _.extract[ContextValue].underlying }
-        case v: JObject => v.obj.map {
-          f => f.name -> f.value.extract[ContextValue].underlying
-        }.toMap
-        case JNull | JNothing => null
-        case _ => throw new MappingException("Unable to interpret type provided")
-      }
-    )
+class ContextValueFormat extends JsonFormat[ContextValue] {
+  def read(value: JsValue): ContextValue = new ContextValue {
+    value match {
+      case JsString(s: String) => s
+      case JsNumber(n: BigDecimal) if n.isValidInt => n.toInt
+      case JsNumber(n: BigDecimal) => n.toDouble
+      case v: JsBoolean => v.value
+      case v: JsArray => v.elements.map { e => read(e).underlying }.toList
+      case v: JsObject => v.obj.fields mapValues { e => read(e).underlying }
+      case JsNull => null
+      case _ => throw new DeserializationException("Unable to interpret type provided")
+    }
   }
 
-  def serialize(implicit formats: Formats): PartialFunction[Any, JValue] = {
-    case c: ContextValue => c.underlying match {
-      case v: String => JString(v)
-      case v: Int => JInt(v)
-      case v: Double => JDouble(v)
-      case v: Boolean => JBool(v)
-      case v: List[Any] => JArray(v map Extraction.decompose)
-      case v: Map[String, Any] => JObject(v.map {
-        case (name, value) => JField(name, Extraction.decompose(new ContextValue(value)))
-      }.toList)
-      case None | null => JNull
-      case v => JString(v.toString)
-    }
+  def write(c: ContextValue): JsValue = c.underlying match {
+    case v: String => JsString(v)
+    case v: Int => JsNumber(v)
+    case v: Double => JsNumber(v)
+    case v: Boolean => JsBoolean(v)
+    case v: List[Any] => JsArray(v map { a: Any => write(new ContextValue(a)) })
+    case v: Map[String, Any] => JsObject(v mapValues { a: Any => write(new ContextValue(a)) })
+    case None | null => JsNull
+    case v => JsString(v.toString)
   }
 }
