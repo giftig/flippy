@@ -17,11 +17,6 @@
     <version>0.2.1-SNAPSHOT</version>
   </parent>
 
-  <properties>
-    <project.build.scalaVersion>2.10.4</project.build.scalaVersion>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
   <build>
     <defaultGoal>package</defaultGoal>
     <directory>${project.basedir}/build</directory>
@@ -146,22 +141,22 @@
     <!-- Spray and akka for API -->
     <dependency>
       <groupId>io.spray</groupId>
-      <artifactId>spray-can</artifactId>
+      <artifactId>spray-can_2.11</artifactId>
       <version>1.3.1</version>
     </dependency>
     <dependency>
       <groupId>io.spray</groupId>
-      <artifactId>spray-routing</artifactId>
+      <artifactId>spray-routing_2.11</artifactId>
       <version>1.3.1</version>
     </dependency>
     <dependency>
       <groupId>io.spray</groupId>
-      <artifactId>spray-httpx_2.10</artifactId>
+      <artifactId>spray-httpx_2.11</artifactId>
       <version>1.3.1</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-actor_2.10</artifactId>
+      <artifactId>akka-actor_2.11</artifactId>
       <version>${project.build.akkaVersion}</version>
     </dependency>
   </dependencies>

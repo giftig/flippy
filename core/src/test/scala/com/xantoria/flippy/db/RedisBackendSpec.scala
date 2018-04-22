@@ -16,7 +16,7 @@ import com.xantoria.flippy.docker.{Redis => DockerRedis}
 import com.xantoria.flippy.serialization.DefaultFormats
 
 @Ignore
-class RedisBackendSpec extends BaseSpec with DockerRedis with DockerTestKit {
+abstract class RedisBackendSpec extends BaseSpec with DockerRedis with DockerTestKit {
   private implicit val executionContext = global
   private implicit val pc = PatienceConfig(Span(10, Seconds), Span(1, Second))
   private implicit val formats = DefaultFormats

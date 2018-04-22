@@ -50,9 +50,9 @@
   </scm>
 
   <properties>
-    <project.build.scalaVersion>2.10.4</project.build.scalaVersion>
+    <project.build.scalaVersion>2.11.11</project.build.scalaVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.build.akkaVersion>2.3.0</project.build.akkaVersion>
+    <project.build.akkaVersion>2.5.12</project.build.akkaVersion>
   </properties>
 
   <build>
