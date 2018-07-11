@@ -196,12 +196,11 @@ as a more complex entity.
 ## Management interface
 
 Flippy is equipped with an HTTP management interface, in /static. The
-recommended approach for serving this interface, and the approach used by the associated
-flippy-tester project, is to use nginx or another web server to serve the static files,
-proxying requests to flippy itself on a path of your choice. You can retrieve the
-giftig/flippy-admin image from dockerhub to easily serve this interface; it is set up with
-simple nginx config to serve the static files and proxy to flippy in another container, so
-the two can be easily composed.
+recommended approach for serving this interface is to use nginx or another web server to
+serve the static files, proxying requests to flippy itself on a path of your choice. This is done for
+you using nginx if you build with the provided `Dockerfile-admin` as detailed below.
+You can retrieve the giftig/flippy-admin image from dockerhub to easily serve this interface if you don't
+want to build it yourself, too.
 
 ### Usage
 The admin is equipped with widgets for each of the built-in condition types to make it easy and
@@ -228,15 +227,8 @@ set the ```DOCKER_URL``` env var.
     export DOCKER_URL=unix:///var/run/docker.sock
 
 ### Building the service
-To build the service, you'll firstly need to build your changes to the core library here with
-`mvn package`, and then rebuild the standalone-service package at
-[giftig/flippy-standalone](https://www.github.com/giftig/flippy-standalone/) which will pull
-this project as a dependency. You can then simply build your own copy of the docker image using
-the Dockerfile in that project.
-
-[TODO] I will be moving the standalone version of this service into this repository shortly and
-setting it up as a maven submodule to ensure everything lives in one place and is easier to work
-with.
+You can simply the service jars with `mvn package` and create a docker image from it
+with `docker build -t <tag> .`
 
 ### Building the admin
 You can build the admin docker image like this:
@@ -250,7 +242,7 @@ via docker-compose. Just add the following line to the ```volumes``` section of 
     - ./static/:/usr/share/nginx/html:ro
 
 ### Development setup
-Once you've built your own images for flippy-standalone and the admin, you can simply use the
+Once you've built your own images for flippy and the admin, you can simply use the
 "Quickstart" guide above and set your versions using environment variables.
 
 You can also run the application natively and serve the admin site however you like, but the
